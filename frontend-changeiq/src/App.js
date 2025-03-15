@@ -203,7 +203,22 @@ function App() {
     });
   };
 
-  const startNew = () => {
+  const invokeTestRequestAsync = async () => {
+    try {
+      fetch('/api/surveys', {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 'test-key': 'test-value'}),
+      });
+    } catch (error) {
+      console.error('Failed to submit:', error);
+    }
+  }
+
+  const startNew = async () => {
+    // TODO: Temporary test invoking Azure Function, remove once we confirm this works.
+    invokeTestRequestAsync();
+
     // Check for unsaved changes
     if (hasUnsavedChanges) {
       if (!window.confirm('You have unsaved changes. Do you want to discard them and start a new survey?')) {
