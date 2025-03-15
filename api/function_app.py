@@ -7,17 +7,6 @@ app = func.FunctionApp(http_auth_level=func.AuthLevel.FUNCTION)
 # TODO: Finish this Azure function GET "surveys" for listing saved survey names
 @app.route(route="surveys", methods=["GET"])
 def get_surveys(req: func.HttpRequest) -> func.HttpResponse:
-    request_body = None
-    try:
-        request_body = req.get_json()
-    except ValueError as e:
-        logging.error(f"GET surveys invalid JSON error: {e}")
-        return func.HttpResponse(
-            json.dumps({}),
-            mimetype='application/json',
-            status_code=400
-        )
-    logging.info(f"GET surveys request: {request_body}")
     # START TODO: Read from Cosmos DB List of surveys
     response_body = {
         "surveys": []

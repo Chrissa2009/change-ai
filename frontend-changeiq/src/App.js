@@ -205,11 +205,7 @@ function App() {
 
   const invokeTestRequestAsync = async () => {
     try {
-      fetch('/api/surveys', {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 'test-key': 'test-value'}),
-      });
+      fetch('/api/surveys', {method: 'GET'});
     } catch (error) {
       console.error('Failed to submit:', error);
     }
