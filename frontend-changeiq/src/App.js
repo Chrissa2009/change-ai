@@ -30,8 +30,13 @@ import SurveyForm from './components/SurveyForm';
 import SaveSurveyDialog from './components/SaveSurveyDialog';
 import DeleteConfirmationDialog from './components/DeleteConfirmationDialog';
 import Footer from './components/Footer';
+import InsightsIcon from '@mui/icons-material/Insights';
+import '@fontsource/space-grotesk';
 
 const theme = createTheme({
+  // typography: {
+  //   fontFamily: '"Space Grotesk", "Roboto", "Helvetica", "Arial", sans-serif',
+  // },
   components: {
     MuiContainer: {
       styleOverrides: {
@@ -235,14 +240,107 @@ function App() {
   };
 
   const drawer = (
-    <Box sx={{ width: drawerWidth }}>
+    <Box sx={{ 
+      width: drawerWidth, 
+      height: '100%',  // Make sure the Box takes full height
+      display: 'flex', 
+      flexDirection: 'column'  // Set flex direction to column
+    }}>
+      <Toolbar sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        <Typography variant="h4" noWrap component="div" sx={{ display: 'flex', alignItems: 'center', fontFamily: '"Space Grotesk", sans-serif' }}>
+          ChangeIQ
+          <InsightsIcon sx={{ ml: 1.5, fontSize: 36, color: 'primary.main' }} />
+        </Typography>
+      </Toolbar>     
+      <Divider />
       <Toolbar>
         <Typography variant="h6" noWrap component="div">
           Your Surveys
         </Typography>
       </Toolbar>
+  
       <Divider />
-      <Box sx={{ p: 2 }}>
+      
+      {/* This flex-grow box will push the button to the bottom */}
+      <Box sx={{ 
+        flex: 1,  // This is critical - it will take all available space
+        display: 'flex', 
+        flexDirection: 'column',
+        overflow: 'hidden'  // Hide overflow
+      }}>
+        <List sx={{ 
+          overflowY: 'auto', 
+          flex: 1  // Take all available space in the flex container
+        }}>
+          {savedSurveys.length === 0 ? (
+            <ListItem>
+              <ListItemText primary="No saved surveys" secondary="Create your first survey to get started" />
+            </ListItem>
+          ) : (
+            savedSurveys
+              .sort((a, b) => new Date(b.dateModified) - new Date(a.dateModified))
+              .map((survey) => (
+                <ListItem 
+                  key={survey.id}
+                  sx={{ 
+                    backgroundColor: currentSurvey && currentSurvey.id === survey.id ? 
+                      'rgba(0, 0, 0, 0.08)' : 'inherit',
+                    py: 1
+                  }}
+                >
+                  <ListItemIcon>
+                    <DescriptionIcon />
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary={survey.name} 
+                    secondary={`Modified: ${new Date(survey.dateModified).toLocaleDateString()}`}
+                    primaryTypographyProps={{
+                      noWrap: true,
+                      style: { maxWidth: '120px' }
+                    }}
+                    secondaryTypographyProps={{
+                      noWrap: true,
+                      style: { maxWidth: '120px' }
+                    }}
+                  />
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                    <IconButton 
+                      size="small" 
+                      onClick={() => handleLoadSurvey(survey)}
+                      title="Edit survey"
+                    >
+                      <EditIcon fontSize="small" />
+                    </IconButton>
+                    <IconButton 
+                      size="small" 
+                      onClick={() => handleDuplicateSurvey(survey)}
+                      title="Duplicate survey"
+                    >
+                      <ContentCopyIcon fontSize="small" />
+                    </IconButton>
+                    <IconButton 
+                      size="small" 
+                      onClick={() => handleDeleteSurvey(survey.id)}
+                      title="Delete survey"
+                    >
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  </Box>
+                </ListItem>
+            ))
+          )}
+        </List>
+      </Box>
+      
+      <Divider />
+      {/* This will now be fixed at the bottom */}
+      <Box sx={{ 
+        p: 2, 
+        mt: 'auto',  // Pushes to bottom if needed
+        position: 'sticky',
+        bottom: 0,
+        backgroundColor: 'background.paper'  // Ensures button has background
+      }}>
         <Button 
           variant="contained" 
           fullWidth 
@@ -251,69 +349,10 @@ function App() {
         >
           Create New Survey
         </Button>
-      </Box>
-      <Divider />
-      <List sx={{ overflowY: 'auto', maxHeight: 'calc(100vh - 180px)' }}>
-        {savedSurveys.length === 0 ? (
-          <ListItem>
-            <ListItemText primary="No saved surveys" secondary="Create your first survey to get started" />
-          </ListItem>
-        ) : (
-          savedSurveys
-            .sort((a, b) => new Date(b.dateModified) - new Date(a.dateModified))
-            .map((survey) => (
-              <ListItem 
-                key={survey.id}
-                sx={{ 
-                  backgroundColor: currentSurvey && currentSurvey.id === survey.id ? 
-                    'rgba(0, 0, 0, 0.08)' : 'inherit',
-                  py: 1
-                }}
-              >
-                <ListItemIcon>
-                  <DescriptionIcon />
-                </ListItemIcon>
-                <ListItemText 
-                  primary={survey.name} 
-                  secondary={`Modified: ${new Date(survey.dateModified).toLocaleDateString()}`}
-                  primaryTypographyProps={{
-                    noWrap: true,
-                    style: { maxWidth: '120px' }
-                  }}
-                  secondaryTypographyProps={{
-                    noWrap: true,
-                    style: { maxWidth: '120px' }
-                  }}
-                />
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                  <IconButton 
-                    size="small" 
-                    onClick={() => handleLoadSurvey(survey)}
-                    title="Edit survey"
-                  >
-                    <EditIcon fontSize="small" />
-                  </IconButton>
-                  <IconButton 
-                    size="small" 
-                    onClick={() => handleDuplicateSurvey(survey)}
-                    title="Duplicate survey"
-                  >
-                    <ContentCopyIcon fontSize="small" />
-                  </IconButton>
-                  <IconButton 
-                    size="small" 
-                    onClick={() => handleDeleteSurvey(survey.id)}
-                    title="Delete survey"
-                  >
-                    <DeleteIcon fontSize="small" />
-                  </IconButton>
-                </Box>
-              </ListItem>
-          ))
-        )}
-      </List>
+      </Box> 
     </Box>
   );
+  
 
   return (
     <ThemeProvider theme={theme}>
