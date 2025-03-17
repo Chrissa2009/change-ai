@@ -31,6 +31,7 @@ import SaveSurveyDialog from './components/SaveSurveyDialog';
 import DeleteConfirmationDialog from './components/DeleteConfirmationDialog';
 import Footer from './components/Footer';
 import InsightsIcon from '@mui/icons-material/Insights';
+import CalculateIcon from '@mui/icons-material/Calculate';
 import '@fontsource/space-grotesk';
 
 const theme = createTheme({
@@ -246,10 +247,10 @@ function App() {
       display: 'flex', 
       flexDirection: 'column'  // Set flex direction to column
     }}>
-      <Toolbar sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-        <Typography variant="h4" noWrap component="div" sx={{ display: 'flex', alignItems: 'center', fontFamily: '"Space Grotesk", sans-serif' }}>
-          ChangeIQ
-          <InsightsIcon sx={{ ml: 1.5, fontSize: 36, color: 'primary.main' }} />
+      <Toolbar sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: '#023047' }}>
+        <Typography variant="h4" noWrap component="div" sx={{ display: 'flex', alignItems: 'center', fontFamily: '"Space Grotesk", sans-serif', color: "#FB8500" }}>
+          changeIQ
+          <InsightsIcon sx={{ ml: 0.5, fontSize: 40, color: '#FFB703' }} />
         </Typography>
       </Toolbar>     
       <Divider />
@@ -346,6 +347,8 @@ function App() {
           fullWidth 
           startIcon={<AddCircleIcon />}
           onClick={startNew}
+          sx={{ backgroundColor: "#219EBC", '&:hover': { backgroundColor: "#1A7A94" } }}
+
         >
           Create New Survey
         </Button>
@@ -362,6 +365,7 @@ function App() {
           sx={{
             width: { md: `calc(100% - ${drawerWidth}px)` },
             ml: { md: `${drawerWidth}px` },
+            backgroundColor: '#023047'
           }}
         >
           <Toolbar>
@@ -421,34 +425,48 @@ function App() {
             flexGrow: 1, 
             p: 3, 
             width: { md: `calc(100% - ${drawerWidth}px)` },
-            mt: '64px'
+            mt: '64px',
+            backgroundColor: "#fff8f0",
           }}
-        >
+        >         
           <Container maxWidth="xl" sx={{ py: 2 }}>
             {!isSubmitted ? (
               <>
-                <Typography variant="h4" component="h1" align="center" gutterBottom>
-                  Technology Adoption ROI Calculator
-                </Typography>
-                <Typography variant="body1" align="center" color="text.secondary" sx={{ mb: 4 }}>
-                  {currentSurvey 
-                    ? `Editing: ${currentSurvey.name}` 
-                    : 'Complete this survey to evaluate the ROI of your technology investment.'}
-                </Typography>
-                <Box 
-                  sx={{ 
-                    mt: 2,
-                    width: '100%',
-                    mx: 'auto'
-                  }}
-                >
-                  <SurveyForm 
-                    onSubmit={handleSubmit} 
-                    initialResponses={currentResponses}
-                    onChange={handleFormChange}
-                  />
-                </Box>
-              </>
+            <Typography 
+              variant="h4" 
+              component="h1" 
+              align="center" 
+              gutterBottom
+              sx={{ 
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#FB8500'
+              }}
+            >
+              <CalculateIcon sx={{ mr: 1, fontSize: 40, color: '#FB8500' }} />
+              Technology Adoption ROI Calculator
+            </Typography>
+            <Typography variant="body1" align="center" color="text.secondary" sx={{ mb: 4 }}>
+              {currentSurvey 
+                ? `Editing: ${currentSurvey.name}` 
+                : 'Complete this survey to evaluate the ROI of your technology investment.'}
+            </Typography>
+            <Box 
+              sx={{ 
+                mt: 2,
+                // pr: 4,
+                width: '100%',
+                mx: 'auto'
+              }}
+            >
+              <SurveyForm 
+                onSubmit={handleSubmit} 
+                initialResponses={currentResponses}
+                onChange={handleFormChange}
+              />
+            </Box>
+          </>
             ) : (
               <Box sx={{ maxWidth: '800px', mx: 'auto' }}>
                 <Typography variant="h5" gutterBottom>
