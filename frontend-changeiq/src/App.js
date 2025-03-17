@@ -29,8 +29,8 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import SurveyForm from './components/SurveyForm';
 import SaveSurveyDialog from './components/SaveSurveyDialog';
 import DeleteConfirmationDialog from './components/DeleteConfirmationDialog';
+import Footer from './components/Footer';
 
-// Create custom theme with wider containers
 const theme = createTheme({
   components: {
     MuiContainer: {
@@ -60,7 +60,6 @@ function App() {
   const appTheme = useTheme();
   const isMobile = useMediaQuery(appTheme.breakpoints.down('md'));
 
-  // Load saved surveys from localStorage on component mount
   useEffect(() => {
     const savedData = localStorage.getItem('roiSurveys');
     if (savedData) {
@@ -68,16 +67,15 @@ function App() {
     }
   }, []);
 
-  // Save surveys to localStorage when they change
   useEffect(() => {
     if (savedSurveys.length) {
       localStorage.setItem('roiSurveys', JSON.stringify(savedSurveys));
     } else {
       localStorage.removeItem('roiSurveys');
     }
+    console.log('savedSurveys:', savedSurveys)
   }, [savedSurveys]);
 
-  // Warn before leaving page with unsaved changes
   useEffect(() => {
     const handleBeforeUnload = (e) => {
       if (hasUnsavedChanges) {
@@ -91,7 +89,6 @@ function App() {
   }, [hasUnsavedChanges]);
 
   const handleFormChange = (newResponses) => {
-    // Compare with original responses to detect changes
     const currentJSON = JSON.stringify(currentResponses);
     const newJSON = JSON.stringify(newResponses);
     
@@ -117,7 +114,6 @@ function App() {
     };
 
     if (currentSurvey) {
-      // Update existing survey
       setSavedSurveys(savedSurveys.map(survey => 
         survey.id === currentSurvey.id ? newSurvey : survey
       ));
@@ -127,7 +123,6 @@ function App() {
         severity: 'success'
       });
     } else {
-      // Add new survey
       setSavedSurveys([...savedSurveys, newSurvey]);
       setSnackbar({
         open: true,
@@ -143,10 +138,9 @@ function App() {
   };
 
   const handleLoadSurvey = (survey) => {
-    // Check for unsaved changes before loading a different survey
     if (hasUnsavedChanges) {
       if (!window.confirm('You have unsaved changes. Do you want to discard them and load another survey?')) {
-        return; // User canceled
+        return;
       }
     }
 
@@ -215,10 +209,9 @@ function App() {
     // TODO: Temporary test invoking Azure Function, remove once we confirm this works.
     invokeTestRequestAsync();
 
-    // Check for unsaved changes
     if (hasUnsavedChanges) {
       if (!window.confirm('You have unsaved changes. Do you want to discard them and start a new survey?')) {
-        return; // User canceled
+        return;
       }
     }
 
@@ -267,7 +260,7 @@ function App() {
           </ListItem>
         ) : (
           savedSurveys
-            .sort((a, b) => new Date(b.dateModified) - new Date(a.dateModified)) // Sort by modification date
+            .sort((a, b) => new Date(b.dateModified) - new Date(a.dateModified))
             .map((survey) => (
               <ListItem 
                 key={survey.id}
@@ -362,7 +355,7 @@ function App() {
             open={mobileOpen}
             onClose={handleDrawerToggle}
             ModalProps={{
-              keepMounted: true, // Better mobile performance
+              keepMounted: true,
             }}
             sx={{
               display: { xs: 'block', md: 'none' },
@@ -389,7 +382,7 @@ function App() {
             flexGrow: 1, 
             p: 3, 
             width: { md: `calc(100% - ${drawerWidth}px)` },
-            mt: '64px'  // Adjust for AppBar height
+            mt: '64px'
           }}
         >
           <Container maxWidth="xl" sx={{ py: 2 }}>
@@ -442,7 +435,7 @@ function App() {
                       Questions answered: {Object.keys(currentSurvey.responses).length}
                     </Typography>
                     
-                    {/* You can add more summary information here, like ROI calculations */}
+                    {/* We can add more summary information here, like ROI calculations */}
                   </Box>
                 )}
                 
@@ -467,6 +460,8 @@ function App() {
               </Box>
             )}
           </Container>
+          <Footer />
+
         </Box>
 
         {/* Dialogs and Notifications */}
