@@ -18,7 +18,8 @@ import {
   Checkbox,
   Divider,
   Select,
-  InputLabel
+  InputLabel,
+  StepButton
 } from '@mui/material';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
@@ -57,6 +58,12 @@ function SurveyForm({ onSubmit, initialResponses = {}, onChange }) {
         [questionId]: ''
       });
     }
+  };
+  
+  const handleStepClick = (stepIndex) => {
+    // Always allow navigation between steps
+    setActiveStep(stepIndex);
+    window.scrollTo(0, 0);
   };
 
   const validateStep = (stepIndex) => {
@@ -268,32 +275,35 @@ function SurveyForm({ onSubmit, initialResponses = {}, onChange }) {
     <Paper 
       elevation={3} 
       sx={{ 
-        p: { xs: 2, sm: 3, md: 4 },  // More padding on larger screens
-        width: '100%',               // Use full available width
-        maxWidth: '100%',            // Ensure it doesn't exceed parent width
-        overflowX: 'hidden'          // Prevent horizontal scrolling
+        p: { xs: 2, sm: 3, md: 4 },  
+        width: '100%',               
+        maxWidth: '100%',            
+        overflowX: 'hidden'          
       }}
     >
       <Stepper 
         activeStep={activeStep} 
         sx={{ 
           mb: 4,
-          display: { xs: 'none', md: 'flex' }, // Hide on small screens
-          overflowX: 'auto',  // Allow horizontal scrolling if needed
-          pb: 2,             // Padding to show scrollbar
+          display: { xs: 'none', md: 'flex' }, 
+          overflowX: 'auto',  
+          pb: 2,             
           '& .MuiStepConnector-line': {
-            display: 'none'  // Hide the connector lines
+            display: 'none' 
           },
           '& .MuiStepLabel-label': {
-            fontSize: { md: '0.8rem', lg: '0.9rem' }, // Smaller font size for step labels
-            whiteSpace: 'nowrap'  // Prevent text wrapping
+            fontSize: { md: '0.8rem', lg: '0.9rem' },
+            whiteSpace: 'nowrap'
           }
         }}
-        alternativeLabel // Use alternative label layout for better spacing
+        alternativeLabel
+        nonLinear
       >
-        {surveyQuestions.map((section) => (
+        {surveyQuestions.map((section, index) => (
           <Step key={section.section}>
-            <StepLabel>{section.section}</StepLabel>
+            <StepButton onClick={() => handleStepClick(index)}>
+            { section.section}
+            </StepButton>
           </Step>
         ))}
       </Stepper>
