@@ -311,6 +311,9 @@ function SurveyForm({ onSubmit, initialResponses = {}, onChange }) {
               transform: 'scale(1.05)',
             }
           },
+          '& .MuiStepIcon-root.Mui-active': {
+            color: '#219EBC', // Background color for active step
+          },
         }}
         alternativeLabel
         nonLinear
@@ -338,7 +341,7 @@ function SurveyForm({ onSubmit, initialResponses = {}, onChange }) {
         <Typography variant="h5" gutterBottom sx={{ 
           display: { xs: 'none', md: 'block' },
           // backgroundColor: 'primary.light', // Light blue background
-          color: 'primary.dark',
+          color: '#023047',
           }}>
           {surveyQuestions[activeStep]?.section.toUpperCase()}
         </Typography>
@@ -358,7 +361,9 @@ function SurveyForm({ onSubmit, initialResponses = {}, onChange }) {
           }}
         >
           <Button
-            variant="outlined"  
+            // variant="outlined"  
+            variant="contained"
+
             disabled={activeStep === 0}
             onClick={handleBack}
             startIcon={<NavigateBeforeIcon />}
@@ -366,16 +371,15 @@ function SurveyForm({ onSubmit, initialResponses = {}, onChange }) {
               transition: 'all 0.3s ease',
               '&:hover': {
                 transform: 'translateY(-3px)',
-                boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
-                backgroundColor: 'rgba(25, 118, 210, 0.08)',
-                borderWidth: '2px',
+                boxShadow: '0 6px 12px rgba(25, 118, 210, 0.3)',
               },
+              backgroundColor: "#219EBC"
             }}
             >
             Back
           </Button>
           
-          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap',  }}>
             {/* Save Progress Button */}
             <Button
               variant="outlined"
@@ -386,10 +390,9 @@ function SurveyForm({ onSubmit, initialResponses = {}, onChange }) {
                 transition: 'all 0.3s ease',
                 '&:hover': {
                   transform: 'translateY(-3px)',
-                  boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
-                  backgroundColor: 'rgba(25, 118, 210, 0.08)',
-                  borderWidth: '2px',
+                  boxShadow: '0 6px 12px rgba(25, 118, 210, 0.3)',
                 },
+                color: "#219EBC"
               }}
             >
               Save Progress
@@ -405,8 +408,8 @@ function SurveyForm({ onSubmit, initialResponses = {}, onChange }) {
                 '&:hover': {
                   transform: 'translateY(-3px)',
                   boxShadow: '0 6px 12px rgba(25, 118, 210, 0.3)',
-                  backgroundColor: 'primary.dark',
                 },
+                backgroundColor: "#219EBC"
               }}
             >
               {activeStep === surveyQuestions.length - 1 ? 'Generate ROI Insights' : 'Next'}
