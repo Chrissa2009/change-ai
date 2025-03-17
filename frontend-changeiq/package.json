@@ -5,6 +5,7 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
+    "@fontsource/space-grotesk": "^5.2.6",
     "@mui/icons-material": "^6.4.7",
     "@mui/material": "^6.4.7",
     "@testing-library/dom": "^10.4.0",
@@ -41,7 +42,6 @@
     ]
   },
   "main": "index.js",
-  "devDependencies": {},
   "keywords": [],
   "author": "",
   "license": "ISC",
