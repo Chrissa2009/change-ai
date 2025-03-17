@@ -24,6 +24,7 @@ import {
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
 import SaveIcon from '@mui/icons-material/Save';
+import InsightsIcon from '@mui/icons-material/Insights';
 
 // Import or define your survey questions
 import { surveyQuestions } from './surveyQuestions';
@@ -258,7 +259,7 @@ function SurveyForm({ onSubmit, initialResponses = {}, onChange }) {
           mt: 2,
           display: 'flex',
           flexDirection: 'column',
-          gap: 2,
+          gap: 1,
           width: '100%'
         }}
       >
@@ -287,14 +288,29 @@ function SurveyForm({ onSubmit, initialResponses = {}, onChange }) {
           mb: 4,
           display: { xs: 'none', md: 'flex' }, 
           overflowX: 'auto',  
-          pb: 2,             
+          pb: 3,     
+          pt: 1,        
           '& .MuiStepConnector-line': {
             display: 'none' 
           },
           '& .MuiStepLabel-label': {
             fontSize: { md: '0.8rem', lg: '0.9rem' },
-            whiteSpace: 'nowrap'
-          }
+            whiteSpace: 'nowrap',
+          },
+          '& .MuiStepButton-root': {
+            // borderRadius: '2px',
+            transition: 'all 0.2s ease-in-out',
+            mx: 0.5,
+            // py: 0.5,
+            // px: 1,
+            
+            // Adds clear hover state to indicate clickability
+            '&:hover': {
+              backgroundColor: 'action.hover',
+              cursor: 'pointer',
+              transform: 'scale(1.05)',
+            }
+          },
         }}
         alternativeLabel
         nonLinear
@@ -319,14 +335,19 @@ function SurveyForm({ onSubmit, initialResponses = {}, onChange }) {
       </Box>
       
       <Box>
-        <Typography variant="h6" gutterBottom sx={{ display: { xs: 'none', md: 'block' } }}>
-          {surveyQuestions[activeStep]?.section}
+        <Typography variant="h5" gutterBottom sx={{ 
+          display: { xs: 'none', md: 'block' },
+          // backgroundColor: 'primary.light', // Light blue background
+          color: 'primary.dark',
+          }}>
+          {surveyQuestions[activeStep]?.section.toUpperCase()}
         </Typography>
         
         <Divider sx={{ mb: 3 }} />
         
         {renderQuestions()}
         
+        {/* Back Button */}
         <Box 
           sx={{ 
             display: 'flex', 
@@ -337,10 +358,20 @@ function SurveyForm({ onSubmit, initialResponses = {}, onChange }) {
           }}
         >
           <Button
+            variant="outlined"  
             disabled={activeStep === 0}
             onClick={handleBack}
             startIcon={<NavigateBeforeIcon />}
-          >
+            sx={{
+              transition: 'all 0.3s ease',
+              '&:hover': {
+                transform: 'translateY(-3px)',
+                boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+                backgroundColor: 'rgba(25, 118, 210, 0.08)',
+                borderWidth: '2px',
+              },
+            }}
+            >
             Back
           </Button>
           
@@ -351,19 +382,37 @@ function SurveyForm({ onSubmit, initialResponses = {}, onChange }) {
               color="primary"
               onClick={handleSaveProgress}
               startIcon={<SaveIcon />}
+              sx={{
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-3px)',
+                  boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+                  backgroundColor: 'rgba(25, 118, 210, 0.08)',
+                  borderWidth: '2px',
+                },
+              }}
             >
               Save Progress
             </Button>
-            
+            {/* Next or Generate ROI Insights Button when it's the last page */}
             <Button
               variant="contained"
               onClick={activeStep === surveyQuestions.length - 1 ? handleSubmit : handleNext}
-              endIcon={activeStep === surveyQuestions.length - 1 ? null : <NavigateNextIcon />}
+              endIcon={activeStep === surveyQuestions.length - 1 ? <InsightsIcon /> : <NavigateNextIcon />}
               color="primary"
+              sx={{
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-3px)',
+                  boxShadow: '0 6px 12px rgba(25, 118, 210, 0.3)',
+                  backgroundColor: 'primary.dark',
+                },
+              }}
             >
-              {activeStep === surveyQuestions.length - 1 ? 'Submit' : 'Next'}
+              {activeStep === surveyQuestions.length - 1 ? 'Generate ROI Insights' : 'Next'}
             </Button>
           </Box>
+
         </Box>
 
         {/* Pagination information */}
