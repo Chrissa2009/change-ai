@@ -1,17 +1,19 @@
 from azure.cosmos import CosmosClient
 from azure.cosmos.exceptions import CosmosResourceNotFoundError
+from azure.identity import DefaultAzureCredential
 
 CONTAINER_NAME = "surveys"
 ID_KEY = "id"
 ID_QUERY = "SELECT c.id FROM c"
 DB_NAME = "roi-insights-db"
+COSMOS_ENDPOINT = "https://roi-cosmos-db-account.documents.azure.com:443"
 
 def _get_container_client(client):
     database = client.get_database_client(database=DB_NAME)
     return database.get_container_client(container=CONTAINER_NAME)
 
-def get_cosmos_client(connection_string):
-    return CosmosClient.from_connection_string(connection_string)
+def get_client():
+    return CosmosClient(url=COSMOS_ENDPOINT, credential=DefaultAzureCredential())
 
 def list_surveys(client):
     container = _get_container_client(client)
