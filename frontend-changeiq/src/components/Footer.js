@@ -3,7 +3,7 @@ import { Box, Typography, Link, IconButton, Stack } from '@mui/material';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
 
 const Footer = ({ 
-  companyName = "ChangeIQ - Microsoft Innovation Challenge March 2025", 
+  companyName = "Change.AI - Microsoft Innovation Challenge March 2025",
   founders = ["Chrissa De Gomez", "Bryan Yue", "Raylan Liang"],
   logo = null, 
   linkedinLinks = {

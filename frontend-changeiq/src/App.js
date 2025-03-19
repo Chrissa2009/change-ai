@@ -205,7 +205,7 @@ function App() {
 
   const invokeTestRequestAsync = async () => {
     try {
-      fetch('/api/surveys', {method: 'GET'});
+      fetch('https://jolly-sand-0b6969e1e.6.azurestaticapps.net/api/surveys', {method: 'GET'});
     } catch (error) {
       console.error('Failed to submit:', error);
     }
@@ -249,7 +249,7 @@ function App() {
     }}>
       <Toolbar sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: '#023047' }}>
         <Typography variant="h4" noWrap component="div" sx={{ display: 'flex', alignItems: 'center', fontFamily: '"Space Grotesk", sans-serif', color: "#FB8500" }}>
-          changeIQ
+          change.ai
           <InsightsIcon sx={{ ml: 0.5, fontSize: 40, color: '#FFB703' }} />
         </Typography>
       </Toolbar>     

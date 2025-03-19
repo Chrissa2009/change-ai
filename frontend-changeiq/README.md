@@ -1,7 +1,7 @@
 
-# Frontend - ChangeIQ
+# Frontend - ChangeAI
 
-This repository contains the frontend code for ChangeIQ, a project developed for the Microsoft Hackathon 2025.
+This repository contains the frontend code for ChangeAI, a project developed for the Microsoft Hackathon 2025.
 
 ## Getting Started
 
