@@ -83,7 +83,7 @@ function App() {
             .filter(survey => survey) // Filter out null results
             .map(survey => ({
               id: survey.id || Date.now(), // Use existing ID or create one
-              name: survey.name,
+              name: survey.name || 'Untitled Survey',
               responses: survey.responses || {},
               dateCreated: survey.dateCreated || new Date().toISOString(),
               dateModified: survey.dateModified || new Date().toISOString()
