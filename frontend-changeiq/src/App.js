@@ -18,7 +18,8 @@ import {
   createTheme,
   ThemeProvider,
   Snackbar,
-  Alert
+  Alert,
+  CircularProgress
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
@@ -33,11 +34,9 @@ import Footer from './components/Footer';
 import InsightsIcon from '@mui/icons-material/Insights';
 import CalculateIcon from '@mui/icons-material/Calculate';
 import '@fontsource/space-grotesk';
+import ApiService from './api';
 
 const theme = createTheme({
-  // typography: {
-  //   fontFamily: '"Space Grotesk", "Roboto", "Helvetica", "Arial", sans-serif',
-  // },
   components: {
     MuiContainer: {
       styleOverrides: {
@@ -62,25 +61,48 @@ function App() {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [deleteDialog, setDeleteDialog] = useState({ open: false, surveyId: null, surveyName: '' });
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
-  
+  const [isLoading, setIsLoading] = useState(false);
+  const [apiError, setApiError] = useState(null);
+  const [surveyAnalysis, setSurveyAnalysis] = useState(null);
+
   const appTheme = useTheme();
   const isMobile = useMediaQuery(appTheme.breakpoints.down('md'));
 
   useEffect(() => {
-    const savedData = localStorage.getItem('roiSurveys');
-    if (savedData) {
-      setSavedSurveys(JSON.parse(savedData));
-    }
-  }, []);
+    const fetchSurveys = async () => {
+      setIsLoading(true);
+      try {
+        const surveyNames = await ApiService.getAllSurveys();
+        if (surveyNames && surveyNames.length > 0) {
+          // For each survey name, fetch the complete survey data
+          const surveyPromises = surveyNames.map(name => ApiService.getSurveyByName(name));
+          const surveysData = await Promise.all(surveyPromises);
+          
+          // Transform the data to match your app's format
+          const formattedSurveys = surveysData
+            .filter(survey => survey) // Filter out null results
+            .map(survey => ({
+              id: survey.id || Date.now(), // Use existing ID or create one
+              name: survey.name || 'Untitled Survey',
+              responses: survey.responses || {},
+              dateCreated: survey.dateCreated || new Date().toISOString(),
+              dateModified: survey.dateModified || new Date().toISOString()
+            }));
+          
+          console.log('formattedSurveys:', formattedSurveys)
+          setSavedSurveys(formattedSurveys);
+        }
+      } catch (error) {
+        console.error('Error loading surveys:', error);
+        setApiError('Failed to load surveys from API.');
+        setSavedSurveys([]); // Set empty array instead of falling back to localStorage
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  useEffect(() => {
-    if (savedSurveys.length) {
-      localStorage.setItem('roiSurveys', JSON.stringify(savedSurveys));
-    } else {
-      localStorage.removeItem('roiSurveys');
-    }
-    console.log('savedSurveys:', savedSurveys)
-  }, [savedSurveys]);
+    fetchSurveys();
+  }, []);
 
   useEffect(() => {
     const handleBeforeUnload = (e) => {
@@ -110,53 +132,105 @@ function App() {
     setOpenSaveDialog(true);
   };
 
-  const handleSaveSurvey = (surveyName) => {
-    const newSurvey = {
-      id: currentSurvey ? currentSurvey.id : Date.now(),
-      name: surveyName,
-      responses: currentResponses,
-      dateCreated: currentSurvey ? currentSurvey.dateCreated : new Date().toISOString(),
-      dateModified: new Date().toISOString()
-    };
+  const handleSaveSurvey = async (surveyName) => {
+    setIsLoading(true);
+    try {
+      const newSurvey = {
+        id: currentSurvey ? currentSurvey.id : Date.now(),
+        name: surveyName,
+        responses: currentResponses,
+        dateCreated: currentSurvey ? currentSurvey.dateCreated : new Date().toISOString(),
+        dateModified: new Date().toISOString()
+      };
 
-    if (currentSurvey) {
-      setSavedSurveys(savedSurveys.map(survey => 
-        survey.id === currentSurvey.id ? newSurvey : survey
-      ));
+      // Save to API
+      await ApiService.saveSurvey(surveyName, newSurvey);
+
+      if (currentSurvey) {
+        setSavedSurveys(savedSurveys.map(survey => 
+          survey.id === currentSurvey.id ? newSurvey : survey
+        ));
+        setSnackbar({
+          open: true,
+          message: 'Survey updated successfully!',
+          severity: 'success'
+        });
+      } else {
+        setSavedSurveys([...savedSurveys, newSurvey]);
+        setSnackbar({
+          open: true,
+          message: 'New survey created!',
+          severity: 'success'
+        });
+      }
+      
+      setOpenSaveDialog(false);
+      setIsSubmitted(true);
+      setCurrentSurvey(newSurvey);
+      setHasUnsavedChanges(false);
+    } catch (error) {
+      console.error('Error saving survey:', error);
       setSnackbar({
         open: true,
-        message: 'Survey updated successfully!',
-        severity: 'success'
+        message: `Failed to save survey: ${error.message}`,
+        severity: 'error'
       });
-    } else {
-      setSavedSurveys([...savedSurveys, newSurvey]);
-      setSnackbar({
-        open: true,
-        message: 'New survey created!',
-        severity: 'success'
-      });
+    } finally {
+      setIsLoading(false);
     }
-    
-    setOpenSaveDialog(false);
-    setIsSubmitted(true);
-    setCurrentSurvey(newSurvey);
-    setHasUnsavedChanges(false);
   };
 
-  const handleLoadSurvey = (survey) => {
+  const handleLoadSurvey = async (survey) => {
     if (hasUnsavedChanges) {
       if (!window.confirm('You have unsaved changes. Do you want to discard them and load another survey?')) {
         return;
       }
     }
 
-    setCurrentSurvey(survey);
-    setCurrentResponses(survey.responses);
-    setCreateNew(false);
-    setIsSubmitted(false);
-    setHasUnsavedChanges(false);
-    if (isMobile) {
-      setMobileOpen(false);
+    setIsLoading(true);
+    try {
+      // Try to get the latest version from the API
+      const latestSurvey = await ApiService.getSurveyByName(survey.name);
+      
+      if (latestSurvey) {
+        // Format the data to match your app's structure
+        const formattedSurvey = {
+          id: latestSurvey.id || survey.id,
+          name: latestSurvey.name,
+          responses: latestSurvey.responses || {},
+          dateCreated: latestSurvey.dateCreated || survey.dateCreated,
+          dateModified: latestSurvey.dateModified || new Date().toISOString()
+        };
+        
+        setCurrentSurvey(formattedSurvey);
+        setCurrentResponses(formattedSurvey.responses);
+      } else {
+        // Fallback to the local version if API fails
+        setCurrentSurvey(survey);
+        setCurrentResponses(survey.responses);
+      }
+      
+      setCreateNew(false);
+      setIsSubmitted(false);
+      setHasUnsavedChanges(false);
+      if (isMobile) {
+        setMobileOpen(false);
+      }
+    } catch (error) {
+      console.error('Error loading survey:', error);
+      setSnackbar({
+        open: true,
+        message: `Failed to load survey: ${error.message}`,
+        severity: 'error'
+      });
+      
+      // Still load the local version as fallback
+      setCurrentSurvey(survey);
+      setCurrentResponses(survey.responses);
+      setCreateNew(false);
+      setIsSubmitted(false);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -169,52 +243,103 @@ function App() {
     });
   };
 
-  const confirmDelete = () => {
-    setSavedSurveys(savedSurveys.filter(survey => survey.id !== deleteDialog.surveyId));
-    
-    if (currentSurvey && currentSurvey.id === deleteDialog.surveyId) {
-      startNew();
-    }
-    
-    setDeleteDialog({ open: false, surveyId: null, surveyName: '' });
-    
-    setSnackbar({
-      open: true,
-      message: 'Survey deleted',
-      severity: 'info'
-    });
-  };
-
-  const handleDuplicateSurvey = (survey) => {
-    const newSurvey = {
-      id: Date.now(),
-      name: `${survey.name} (Copy)`,
-      responses: { ...survey.responses },
-      dateCreated: new Date().toISOString(),
-      dateModified: new Date().toISOString()
-    };
-    
-    setSavedSurveys([...savedSurveys, newSurvey]);
-    
-    setSnackbar({
-      open: true,
-      message: 'Survey duplicated',
-      severity: 'success'
-    });
-  };
-
-  const invokeTestRequestAsync = async () => {
+  const confirmDelete = async () => {
+    setIsLoading(true);
     try {
-      fetch('https://happy-sky-0d83f1a10.6.azurestaticapps.net/api/surveys', {method: 'GET'});
+      const surveyToDelete = savedSurveys.find(s => s.id === deleteDialog.surveyId);
+      if (surveyToDelete) {
+        // Use the dedicated delete method
+        await ApiService.deleteSurvey(surveyToDelete.name);
+      }
+      
+      setSavedSurveys(savedSurveys.filter(survey => survey.id !== deleteDialog.surveyId));
+      
+      if (currentSurvey && currentSurvey.id === deleteDialog.surveyId) {
+        startNew();
+      }
+      
+      setDeleteDialog({ open: false, surveyId: null, surveyName: '' });
+      
+      setSnackbar({
+        open: true,
+        message: 'Survey deleted',
+        severity: 'info'
+      });
     } catch (error) {
-      console.error('Failed to submit:', error);
+      console.error('Error deleting survey:', error);
+      setSnackbar({
+        open: true,
+        message: `Failed to delete survey: ${error.message}`,
+        severity: 'error'
+      });
+    } finally {
+      setIsLoading(false);
     }
-  }
+  };
+  
+  const getSurveyAnalysis = async (surveyName) => {
+    if (!surveyName) return;
+    
+    setIsLoading(true);
+    try {
+      const analysisData = await ApiService.getSurveyAnalysis(surveyName);
+      
+      console.log('Analysis data:', analysisData);
+      
+      setSnackbar({
+        open: true,
+        message: 'Analysis completed successfully',
+        severity: 'success'
+      });
+      
+      setSurveyAnalysis(analysisData);
+
+    } catch (error) {
+      console.error('Error getting survey analysis:', error);
+      setSnackbar({
+        open: true,
+        message: `Failed to get analysis: ${error.message}`,
+        severity: 'error'
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDuplicateSurvey = async (survey) => {
+    setIsLoading(true);
+    try {
+      const newSurvey = {
+        id: Date.now(),
+        name: `${survey.name} (Copy)`,
+        responses: { ...survey.responses },
+        dateCreated: new Date().toISOString(),
+        dateModified: new Date().toISOString()
+      };
+      
+      // Save to the API
+      await ApiService.saveSurvey(newSurvey.name, newSurvey);
+      
+      setSavedSurveys([...savedSurveys, newSurvey]);
+      
+      setSnackbar({
+        open: true,
+        message: 'Survey duplicated',
+        severity: 'success'
+      });
+    } catch (error) {
+      console.error('Error duplicating survey:', error);
+      setSnackbar({
+        open: true,
+        message: `Failed to duplicate survey: ${error.message}`,
+        severity: 'error'
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const startNew = async () => {
-    // TODO: Temporary test invoking Azure Function, remove once we confirm this works.
-    invokeTestRequestAsync();
-
     if (hasUnsavedChanges) {
       if (!window.confirm('You have unsaved changes. Do you want to discard them and start a new survey?')) {
         return;
@@ -243,9 +368,9 @@ function App() {
   const drawer = (
     <Box sx={{ 
       width: drawerWidth, 
-      height: '100%',  // Make sure the Box takes full height
+      height: '100%',
       display: 'flex', 
-      flexDirection: 'column'  // Set flex direction to column
+      flexDirection: 'column'
     }}>
       <Toolbar sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: '#023047' }}>
         <Typography variant="h4" noWrap component="div" sx={{ display: 'flex', alignItems: 'center', fontFamily: '"Space Grotesk", sans-serif', color: "#FB8500" }}>
@@ -262,16 +387,15 @@ function App() {
   
       <Divider />
       
-      {/* This flex-grow box will push the button to the bottom */}
       <Box sx={{ 
-        flex: 1,  // This is critical - it will take all available space
+        flex: 1,
         display: 'flex', 
         flexDirection: 'column',
-        overflow: 'hidden'  // Hide overflow
+        overflow: 'hidden'
       }}>
         <List sx={{ 
           overflowY: 'auto', 
-          flex: 1  // Take all available space in the flex container
+          flex: 1
         }}>
           {savedSurveys.length === 0 ? (
             <ListItem>
@@ -334,13 +458,12 @@ function App() {
       </Box>
       
       <Divider />
-      {/* This will now be fixed at the bottom */}
       <Box sx={{ 
         p: 2, 
-        mt: 'auto',  // Pushes to bottom if needed
+        mt: 'auto',
         position: 'sticky',
         bottom: 0,
-        backgroundColor: 'background.paper'  // Ensures button has background
+        backgroundColor: 'background.paper'
       }}>
         <Button 
           variant="contained" 
@@ -348,7 +471,6 @@ function App() {
           startIcon={<AddCircleIcon />}
           onClick={startNew}
           sx={{ backgroundColor: "#219EBC", '&:hover': { backgroundColor: "#1A7A94" } }}
-
         >
           Create New Survey
         </Button>
@@ -429,6 +551,18 @@ function App() {
             backgroundColor: "#fff8f0",
           }}
         >         
+          {isLoading && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+              <CircularProgress />
+            </Box>
+          )}
+          
+          {apiError && (
+            <Alert severity="warning" sx={{ mb: 2 }}>
+              {apiError}
+            </Alert>
+          )}
+
           <Container maxWidth="xl" sx={{ py: 2 }}>
             {!isSubmitted ? (
               <>
@@ -455,7 +589,6 @@ function App() {
             <Box 
               sx={{ 
                 mt: 2,
-                // pr: 4,
                 width: '100%',
                 mx: 'auto'
               }}
@@ -491,8 +624,6 @@ function App() {
                     <Typography variant="body2" sx={{ mt: 2 }}>
                       Questions answered: {Object.keys(currentSurvey.responses).length}
                     </Typography>
-                    
-                    {/* We can add more summary information here, like ROI calculations */}
                   </Box>
                 )}
                 
@@ -500,7 +631,7 @@ function App() {
                   <Button 
                     variant="contained" 
                     onClick={startNew} 
-                    sx={{ mr: 2 }}
+                    sx={{ mr: 2, backgroundColor: "#219EBC", '&:hover': { backgroundColor: "#1A7A94" } }}
                   >
                     Create New Survey
                   </Button>
@@ -509,6 +640,9 @@ function App() {
                     onClick={() => {
                       setIsSubmitted(false);
                       setCreateNew(false);
+                    }}
+                    sx = {{
+                      color: '#219EBC'
                     }}
                   >
                     Continue Editing
