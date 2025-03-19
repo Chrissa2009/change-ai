@@ -205,7 +205,7 @@ function App() {
 
   const invokeTestRequestAsync = async () => {
     try {
-      fetch('https://jolly-sand-0b6969e1e.6.azurestaticapps.net/api/surveys', {method: 'GET'});
+      fetch('https://happy-sky-0d83f1a10.6.azurestaticapps.net/api/surveys', {method: 'GET'});
     } catch (error) {
       console.error('Failed to submit:', error);
     }
