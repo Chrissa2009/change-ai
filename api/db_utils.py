@@ -4,9 +4,10 @@ from azure.identity import DefaultAzureCredential
 
 CONTAINER_NAME = "surveys"
 ID_KEY = "id"
+DATA_KEY = "data"
 ID_QUERY = "SELECT c.id FROM c"
-DB_NAME = "roi-insights-db"
-COSMOS_ENDPOINT = "https://roi-cosmos-db-account.documents.azure.com:443"
+DB_NAME = "changeai-db"
+COSMOS_ENDPOINT = "https://changeai-storage.documents.azure.com:443"
 
 def _get_container_client(client):
     database = client.get_database_client(database=DB_NAME)
@@ -23,14 +24,16 @@ def list_surveys(client):
 def get_survey(client, name):
     container = _get_container_client(client)
     try:
-        return container.read_item(item=name, partition_key=name)
+        return container.read_item(item=name, partition_key=name)[DATA_KEY]
     except CosmosResourceNotFoundError:
         return None
 
 def put_survey(client, name, content):
-    content[ID_KEY] = name
+    record = {}
+    record[ID_KEY] = name
+    record[DATA_KEY] = content
     container = _get_container_client(client)
-    container.upsert_item(body=content)
+    container.upsert_item(body=record)
 
 def delete_survey(client, name):
     container = _get_container_client(client)

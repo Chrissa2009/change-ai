@@ -35,7 +35,7 @@ $roleAssignmentGuid = [guid]::NewGuid().ToString()
 
 $currentUserId = az ad signed-in-user show --query id -o tsv
 
-$existingRole = az cosmosdb sql role definition list --account-name $accountName --resource-group $resourceGroup --query "[?roleName=='Custom Cosmos DB Role'].id" -o tsv
+$existingRole = az cosmosdb sql role definition list --account-name $accountName --resource-group $resourceGroup --query "[?roleName=='Custom User Cosmos DB Role'].id" -o tsv
 
 if ($existingRole) {
     Write-Host "Role 'Custom Cosmos DB Role' already exists, skippping role creation and principal association."
@@ -44,7 +44,7 @@ if ($existingRole) {
 
 $roleDefinition = @{
     Id = $roleAssignmentGuid
-    RoleName = "Custom Cosmos DB Role"
+    RoleName = "Custom User Cosmos DB Role"
     Type = "CustomRole"
     AssignableScopes = @($scope)
     Permissions = @(

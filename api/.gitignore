@@ -49,6 +49,8 @@ coverage.xml
 *.cover
 .hypothesis/
 .pytest_cache/
+.vscode
+__blobstorage__
 
 # Translations
 *.mo
@@ -133,5 +135,3 @@ __blobstorage__
 __queuestorage__
 __azurite_db*__.json
 .python_packages
-
-**/package-lock.json
