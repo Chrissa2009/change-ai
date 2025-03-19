@@ -129,3 +129,61 @@ def delete_survey(req: func.HttpRequest) -> func.HttpResponse:
             mimetype='application/json',
             status_code=500
         )
+
+@app.function_name(name="GetSurveyAnalysis")
+@app.route(route="survey/analysis", methods=["GET"])
+def get_survey(req: func.HttpRequest) -> func.HttpResponse:
+    survey_name = req.params.get('surveyName')
+    if not survey_name:
+        response_body = {"error": "Malformed request, missing surveyName request parameter."}
+        logging.error(f"GET survey analysis error: {response_body}")
+        return func.HttpResponse(
+            json.dumps(response_body),
+            mimetype='application/json',
+            status_code=400
+        )
+    try:
+        survey = db_utils.get_survey(db_utils.get_client(), survey_name)
+        if not survey:
+            return func.HttpResponse(
+                json.dumps({}),
+                mimetype='application/json',
+                status_code=404
+            )
+
+        analysis = {
+            "surveyName": "foo",
+            "roi": {
+                "value": 0.9,
+                "explanation": "This is a reason the roi is this value"
+            },
+            "insights": [
+                {
+                    "title": "This is the insight title", 
+                    "description": "This is a description of the insight.",
+                    "contents": "This is the insight contents"
+                }
+            ],
+            "recommendations": [
+                {
+                    "title": "This is the recommendation title",
+                    "description": "This is a description of the recommendation.",
+                    "contents": "This is the recommendations contents"
+                }
+            ]
+        }
+
+        logging.info(f"GET survey analysis response: {analysis}")
+
+        return func.HttpResponse(
+            json.dumps(analysis),
+            mimetype='application/json',
+            status_code=200
+        )
+    except Exception as e:
+        logging.error(f"GET survey analysis error: {e}")
+        return func.HttpResponse(
+            json.dumps({"error": repr(e)}),
+            mimetype='application/json',
+            status_code=500
+        )
