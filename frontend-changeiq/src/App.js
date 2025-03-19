@@ -37,9 +37,6 @@ import '@fontsource/space-grotesk';
 import ApiService from './api';
 
 const theme = createTheme({
-  // typography: {
-  //   fontFamily: '"Space Grotesk", "Roboto", "Helvetica", "Arial", sans-serif',
-  // },
   components: {
     MuiContainer: {
       styleOverrides: {
@@ -97,12 +94,8 @@ function App() {
         }
       } catch (error) {
         console.error('Error loading surveys:', error);
-        setApiError('Failed to load surveys. Using local storage as fallback.');
-        // Fallback to localStorage if API fails
-        const savedData = localStorage.getItem('roiSurveys');
-        if (savedData) {
-          setSavedSurveys(JSON.parse(savedData));
-        }
+        setApiError('Failed to load surveys from API.');
+        setSavedSurveys([]); // Set empty array instead of falling back to localStorage
       } finally {
         setIsLoading(false);
       }
@@ -110,23 +103,6 @@ function App() {
 
     fetchSurveys();
   }, []);
-
-  // TODO: delete when api is working
-  // useEffect(() => {
-  //   const savedData = localStorage.getItem('roiSurveys');
-  //   if (savedData) {
-  //     setSavedSurveys(JSON.parse(savedData));
-  //   }
-  // }, []);
-
-  useEffect(() => {
-    if (savedSurveys.length) {
-      localStorage.setItem('roiSurveys', JSON.stringify(savedSurveys));
-    } else {
-      localStorage.removeItem('roiSurveys');
-    }
-    console.log('savedSurveys:', savedSurveys)
-  }, [savedSurveys]);
 
   useEffect(() => {
     const handleBeforeUnload = (e) => {
@@ -272,7 +248,7 @@ function App() {
     try {
       const surveyToDelete = savedSurveys.find(s => s.id === deleteDialog.surveyId);
       if (surveyToDelete) {
-        // Use the dedicated delete method instead of sending an empty object
+        // Use the dedicated delete method
         await ApiService.deleteSurvey(surveyToDelete.name);
       }
       
@@ -301,7 +277,6 @@ function App() {
     }
   };
   
-  // TODO: implement survey analysis later
   const getSurveyAnalysis = async (surveyName) => {
     if (!surveyName) return;
     
@@ -309,10 +284,8 @@ function App() {
     try {
       const analysisData = await ApiService.getSurveyAnalysis(surveyName);
       
-      // Handle the analysis data - you could add this to your state
       console.log('Analysis data:', analysisData);
       
-      // Show a notification that analysis is ready
       setSnackbar({
         open: true,
         message: 'Analysis completed successfully',
@@ -366,18 +339,7 @@ function App() {
     }
   };
 
-  const invokeTestRequestAsync = async () => {
-    try {
-      fetch('https://happy-sky-0d83f1a10.6.azurestaticapps.net/api/surveys', {method: 'GET'});
-    } catch (error) {
-      console.error('API connectivity test failed:', error);
-    }
-  }
-
   const startNew = async () => {
-    // TODO: Temporary test invoking Azure Function, remove once we confirm this works.
-    invokeTestRequestAsync();
-
     if (hasUnsavedChanges) {
       if (!window.confirm('You have unsaved changes. Do you want to discard them and start a new survey?')) {
         return;
@@ -406,9 +368,9 @@ function App() {
   const drawer = (
     <Box sx={{ 
       width: drawerWidth, 
-      height: '100%',  // Make sure the Box takes full height
+      height: '100%',
       display: 'flex', 
-      flexDirection: 'column'  // Set flex direction to column
+      flexDirection: 'column'
     }}>
       <Toolbar sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: '#023047' }}>
         <Typography variant="h4" noWrap component="div" sx={{ display: 'flex', alignItems: 'center', fontFamily: '"Space Grotesk", sans-serif', color: "#FB8500" }}>
@@ -425,16 +387,15 @@ function App() {
   
       <Divider />
       
-      {/* This flex-grow box will push the button to the bottom */}
       <Box sx={{ 
-        flex: 1,  // This is critical - it will take all available space
+        flex: 1,
         display: 'flex', 
         flexDirection: 'column',
-        overflow: 'hidden'  // Hide overflow
+        overflow: 'hidden'
       }}>
         <List sx={{ 
           overflowY: 'auto', 
-          flex: 1  // Take all available space in the flex container
+          flex: 1
         }}>
           {savedSurveys.length === 0 ? (
             <ListItem>
@@ -497,13 +458,12 @@ function App() {
       </Box>
       
       <Divider />
-      {/* This will now be fixed at the bottom */}
       <Box sx={{ 
         p: 2, 
-        mt: 'auto',  // Pushes to bottom if needed
+        mt: 'auto',
         position: 'sticky',
         bottom: 0,
-        backgroundColor: 'background.paper'  // Ensures button has background
+        backgroundColor: 'background.paper'
       }}>
         <Button 
           variant="contained" 
@@ -511,7 +471,6 @@ function App() {
           startIcon={<AddCircleIcon />}
           onClick={startNew}
           sx={{ backgroundColor: "#219EBC", '&:hover': { backgroundColor: "#1A7A94" } }}
-
         >
           Create New Survey
         </Button>
@@ -630,7 +589,6 @@ function App() {
             <Box 
               sx={{ 
                 mt: 2,
-                // pr: 4,
                 width: '100%',
                 mx: 'auto'
               }}
@@ -666,8 +624,6 @@ function App() {
                     <Typography variant="body2" sx={{ mt: 2 }}>
                       Questions answered: {Object.keys(currentSurvey.responses).length}
                     </Typography>
-                    
-                    {/* We can add more summary information here, like ROI calculations */}
                   </Box>
                 )}
                 
@@ -676,7 +632,6 @@ function App() {
                     variant="contained" 
                     onClick={startNew} 
                     sx={{ mr: 2, backgroundColor: "#219EBC", '&:hover': { backgroundColor: "#1A7A94" } }}
-
                   >
                     Create New Survey
                   </Button>
