@@ -34,4 +34,4 @@ Thumbs.db
 *.sln
 *.sw?
 
-__azurite_db_blob*
+__azurite_*
