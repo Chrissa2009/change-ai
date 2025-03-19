@@ -1,3 +1,4 @@
+// components/SurveyAnalysisResults.jsx
 import React from 'react';
 import {
   Box,
@@ -11,13 +12,17 @@ import {
   AccordionSummary,
   AccordionDetails,
   Chip,
-  Grid
+  Grid,
+  Card,
+  CardContent,
+  CardHeader
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
-import TimerIcon from '@mui/icons-material/Timer';
+import LightbulbIcon from '@mui/icons-material/Lightbulb';
+import RecommendIcon from '@mui/icons-material/Recommend';
 
 const SurveyAnalysisResults = ({ analysisData }) => {
   if (!analysisData) {
@@ -30,21 +35,16 @@ const SurveyAnalysisResults = ({ analysisData }) => {
     );
   }
 
-  // Format currency for display
-  const formatCurrency = (value) => {
-    if (value === undefined || value === null) return 'N/A';
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      maximumFractionDigits: 0,
-    }).format(value);
-  };
+  console.log('Rendering analysis results with data:', analysisData);
 
   // Format percentage for display
   const formatPercentage = (value) => {
     if (value === undefined || value === null) return 'N/A';
     return `${(value * 100).toFixed(1)}%`;
   };
+
+  // Extract ROI value from the nested object structure
+  const roiValue = analysisData.roi?.value || 0;
 
   return (
     <Box sx={{ mt: 4 }}>
@@ -56,165 +56,112 @@ const SurveyAnalysisResults = ({ analysisData }) => {
       {/* Summary Section */}
       <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
         <Grid container spacing={3}>
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12}>
             <Box sx={{ mb: 2 }}>
               <Typography variant="subtitle2" color="text.secondary">
                 ROI
               </Typography>
               <Typography variant="h4" sx={{ 
-                color: (analysisData.roi > 0) ? 'success.main' : 'error.main',
+                color: (roiValue > 0) ? 'success.main' : 'error.main',
                 display: 'flex',
                 alignItems: 'center'
               }}>
-                {(analysisData.roi > 0) 
+                {(roiValue > 0) 
                   ? <TrendingUpIcon sx={{ mr: 1 }} /> 
                   : <TrendingDownIcon sx={{ mr: 1 }} />}
-                {formatPercentage(analysisData.roi)}
+                {formatPercentage(roiValue)}
               </Typography>
             </Box>
             
-            <Box sx={{ mb: 2 }}>
-              <Typography variant="subtitle2" color="text.secondary">
-                Payback Period
-              </Typography>
-              <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center' }}>
-                <TimerIcon sx={{ mr: 1, fontSize: 20 }} />
-                {analysisData.payback_period ? `${analysisData.payback_period} months` : 'N/A'}
-              </Typography>
-            </Box>
-          </Grid>
-          
-          <Grid item xs={12} md={6}>
-            <Box sx={{ mb: 2 }}>
-              <Typography variant="subtitle2" color="text.secondary">
-                Net Present Value
-              </Typography>
-              <Typography variant="h5">
-                {formatCurrency(analysisData.npv)}
-              </Typography>
-            </Box>
-            
-            <Box>
-              <Typography variant="subtitle2" color="text.secondary">
-                Total Cost of Ownership
-              </Typography>
-              <Typography variant="h6">
-                {formatCurrency(analysisData.total_cost)}
-              </Typography>
-            </Box>
+            {analysisData.roi?.explanation && (
+              <Box sx={{ mt: 2 }}>
+                <Typography variant="subtitle2" color="text.secondary">
+                  Explanation
+                </Typography>
+                <Typography variant="body1">
+                  {analysisData.roi.explanation}
+                </Typography>
+              </Box>
+            )}
           </Grid>
         </Grid>
       </Paper>
       
-      {/* Benefits & Costs */}
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={6}>
-          <Paper elevation={2} sx={{ p: 3, height: '100%' }}>
-            <Typography variant="h6" gutterBottom>Benefits</Typography>
-            <Divider sx={{ mb: 2 }} />
-            
-            {analysisData.benefits ? (
-              <List dense>
-                {Object.entries(analysisData.benefits).map(([key, value]) => (
-                  <ListItem key={key}>
-                    <ListItemText 
-                      primary={key.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
-                      secondary={formatCurrency(value)}
-                    />
-                    <Chip 
-                      label={formatCurrency(value)} 
-                      color="success" 
-                      size="small" 
-                      variant="outlined"
-                    />
-                  </ListItem>
-                ))}
-                <Divider sx={{ my: 1 }} />
-                <ListItem>
-                  <ListItemText 
-                    primary="Total Benefits"
-                    primaryTypographyProps={{ fontWeight: 'bold' }}
+      {/* Insights */}
+      {analysisData.insights && analysisData.insights.length > 0 && (
+        <Box sx={{ mt: 3 }}>
+          <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
+            <LightbulbIcon sx={{ mr: 1 }} />
+            Insights
+          </Typography>
+          
+          <Grid container spacing={2}>
+            {analysisData.insights.map((insight, index) => (
+              <Grid item xs={12} key={`insight-${index}`}>
+                <Card elevation={1}>
+                  <CardHeader 
+                    title={insight.title}
+                    subheader={insight.description}
                   />
-                  <Chip 
-                    label={formatCurrency(analysisData.total_benefits)} 
-                    color="success" 
-                    size="small" 
-                  />
-                </ListItem>
-              </List>
-            ) : (
-              <Typography color="text.secondary">No benefits data available</Typography>
-            )}
-          </Paper>
-        </Grid>
-        
-        <Grid item xs={12} md={6}>
-          <Paper elevation={2} sx={{ p: 3, height: '100%' }}>
-            <Typography variant="h6" gutterBottom>Costs</Typography>
-            <Divider sx={{ mb: 2 }} />
-            
-            {analysisData.costs ? (
-              <List dense>
-                {Object.entries(analysisData.costs).map(([key, value]) => (
-                  <ListItem key={key}>
-                    <ListItemText 
-                      primary={key.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
-                      secondary={formatCurrency(value)}
-                    />
-                    <Chip 
-                      label={formatCurrency(value)} 
-                      color="error" 
-                      size="small" 
-                      variant="outlined"
-                    />
-                  </ListItem>
-                ))}
-                <Divider sx={{ my: 1 }} />
-                <ListItem>
-                  <ListItemText 
-                    primary="Total Costs"
-                    primaryTypographyProps={{ fontWeight: 'bold' }}
-                  />
-                  <Chip 
-                    label={formatCurrency(analysisData.total_cost)} 
-                    color="error" 
-                    size="small" 
-                  />
-                </ListItem>
-              </List>
-            ) : (
-              <Typography color="text.secondary">No costs data available</Typography>
-            )}
-          </Paper>
-        </Grid>
-      </Grid>
-      
-      {/* Recommendations & Insights */}
-      {analysisData.recommendations && (
-        <Accordion sx={{ mt: 3 }}>
-          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography variant="h6">Recommendations</Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            <Typography variant="body1" paragraph>
-              {analysisData.recommendations}
-            </Typography>
-          </AccordionDetails>
-        </Accordion>
+                  <CardContent>
+                    <Typography variant="body1">
+                      {insight.contents}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        </Box>
       )}
       
-      {analysisData.insights && (
-        <Accordion sx={{ mt: 2 }}>
-          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography variant="h6">Insights</Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            <Typography variant="body1" paragraph>
-              {analysisData.insights}
-            </Typography>
-          </AccordionDetails>
-        </Accordion>
+      {/* Recommendations */}
+      {analysisData.recommendations && analysisData.recommendations.length > 0 && (
+        <Box sx={{ mt: 3 }}>
+          <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
+            <RecommendIcon sx={{ mr: 1 }} />
+            Recommendations
+          </Typography>
+          
+          <Grid container spacing={2}>
+            {analysisData.recommendations.map((recommendation, index) => (
+              <Grid item xs={12} key={`recommendation-${index}`}>
+                <Card elevation={1} sx={{ bgcolor: 'background.paper' }}>
+                  <CardHeader 
+                    title={recommendation.title}
+                    subheader={recommendation.description}
+                  />
+                  <CardContent>
+                    <Typography variant="body1">
+                      {recommendation.contents}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        </Box>
       )}
+      
+      {/* Additional analysis data could be displayed here */}
+      {Object.entries(analysisData)
+        .filter(([key]) => !['roi', 'insights', 'recommendations', 'surveyName'].includes(key))
+        .map(([key, value]) => {
+          // Only render primitive values or simple objects
+          if (typeof value !== 'object' || value === null) {
+            return (
+              <Box key={key} sx={{ mt: 2 }}>
+                <Typography variant="subtitle2" color="text.secondary">
+                  {key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ')}
+                </Typography>
+                <Typography variant="body1">
+                  {value}
+                </Typography>
+              </Box>
+            );
+          }
+          return null;
+        })}
     </Box>
   );
 };
