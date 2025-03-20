@@ -1,12 +1,14 @@
 import azure.functions as func
 import logging
 import json
+import uuid
 import db_utils
 import openai_utils
 import pydantic
 import analysis_schema
 import system_message
 import keyvault_utils
+import blob_utils
 
 app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
 
@@ -186,15 +188,46 @@ def get_survey_analysis(req: func.HttpRequest) -> func.HttpResponse:
         )
     try:
         api_key = keyvault_utils.get_secret(keyvault_utils.get_client(), "OpenAI")
-        analysis_json = openai_utils.get_json_response(
-            client=openai_utils.get_client(api_key=api_key),
-            system_message=system_message.ROI_EXPERT_SYSTEM_MESSAGE,
-            user_message=request_json,
-            response_class=analysis_schema.Response
+        openai_response = json.loads(
+                openai_utils.get_json_response(
+                client=openai_utils.get_client(api_key=api_key),
+                system_message=system_message.ROI_EXPERT_SYSTEM_MESSAGE,
+                user_message=request_json,
+                response_class=analysis_schema.Response
+            )
         )
-        logging.info(f"GET survey analysis response: {analysis_json}")
+        logging.info(f"GET survey analysis OpenAI response: {openai_response}")
+        summary = openai_response["summary"]
+        analysis = {
+            "response": openai_response["analysis"],
+            "request": request_body,
+            "persona": system_message.ROI_EXPERT_SYSTEM_MESSAGE,
+            "summary": summary
+        }
+        analysis_json = json.dumps(analysis)
+        blob_client = blob_utils.get_client()
+        prefix = str(uuid.uuid4())
+        analysis_url = blob_utils.upload_blob(
+            client=blob_client,
+            container_name="analysis",
+            blob_name=f"{prefix}.json",
+            content_type="application/json",
+            data=analysis_json
+        )
+        summary_url = blob_utils.upload_blob(
+            client=blob_client,
+            container_name="summary",
+            blob_name=f"{prefix}.txt",
+            content_type="text/plain",
+            data=summary
+        )
+        response = {
+            "summary": summary_url,
+            "analysis": analysis_url
+        }
+        logging.info(f"GET survey analysis response: {response}")
         return func.HttpResponse(
-            analysis_json,
+            json.dumps(response),
             mimetype='application/json',
             status_code=200
         )
