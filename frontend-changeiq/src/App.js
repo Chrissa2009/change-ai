@@ -25,6 +25,7 @@ import {
   DialogContent, 
   DialogTitle, 
   LinearProgress,
+  Tooltip,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
@@ -441,18 +442,32 @@ function App() {
                   <ListItemIcon>
                     <DescriptionIcon />
                   </ListItemIcon>
-                  <ListItemText 
-                    primary={survey.name} 
-                    secondary={`Modified: ${new Date(survey.dateModified).toLocaleDateString()}`}
-                    primaryTypographyProps={{
-                      noWrap: true,
-                      style: { maxWidth: '120px' }
-                    }}
-                    secondaryTypographyProps={{
-                      noWrap: true,
-                      style: { maxWidth: '120px' }
-                    }}
-                  />
+                  <Tooltip 
+                    title={
+                      <Box>
+                        <Typography variant="subtitle2">{survey.name}</Typography>
+                        <Typography variant="body2" >
+                          Modified: {new Date(survey.dateModified).toLocaleString()}
+                        </Typography>
+                      </Box>
+                    }
+                    arrow
+                    placement="top"
+                    enterDelay={500}
+                  >
+                    <ListItemText 
+                      primary={survey.name} 
+                      secondary={`Modified: ${new Date(survey.dateModified).toLocaleDateString()}`}
+                      primaryTypographyProps={{
+                        noWrap: true,
+                        style: { maxWidth: '120px' }
+                      }}
+                      secondaryTypographyProps={{
+                        noWrap: true,
+                        style: { maxWidth: '120px' }
+                      }}
+                    />
+                  </Tooltip>
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                     <IconButton 
                       size="small" 
