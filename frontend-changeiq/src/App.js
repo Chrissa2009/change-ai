@@ -398,12 +398,44 @@ function App() {
       display: 'flex', 
       flexDirection: 'column'
     }}>
-      <Toolbar sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: '#023047' }}>
-        <InsightsIcon sx={{ mr: 1, fontSize: 40, color: '#FFB703' }} />
-        <Typography variant="h4" noWrap component="div" sx={{ display: 'flex', alignItems: 'center', fontFamily: '"Space Grotesk", sans-serif', color: "#FB8500" }}>
-          change.ai
+    <Toolbar sx={{ 
+      display: 'flex', 
+      justifyContent: 'center', 
+      alignItems: 'center', 
+      backgroundColor: '#023047' 
+    }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+        <Box>
+          <Typography 
+            variant="h4" 
+            noWrap 
+            component="div" 
+            sx={{ 
+              fontFamily: '"Space Grotesk", sans-serif', 
+              color: "#FB8500",
+              lineHeight: 1.2,
+              display: 'flex',
+              alignItems: 'center'
+            }}
+            >
+            <InsightsIcon sx={{ mr: 1, fontSize: 40, color: '#FFB703' }} />
+            change.ai
+          </Typography>
+        </Box>
+        <Typography 
+          variant="subtitle2" 
+          sx={{ 
+            color: '#8ecae6',
+            fontStyle: 'bold',
+            letterSpacing: 0.5,
+            fontSize: '0.85rem',
+            textAlign: 'center'
+          }}
+        >
+          AI Calculations. Human Decisions.
         </Typography>
-      </Toolbar>     
+      </Box>
+    </Toolbar>     
       <Divider />
       <Toolbar>
         <Typography variant="h6" noWrap component="div">
