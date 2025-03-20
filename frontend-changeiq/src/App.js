@@ -20,12 +20,18 @@ import {
   Snackbar,
   Alert,
   CircularProgress,
-  Paper
+  Paper,
+  Dialog, 
+  DialogActions, 
+  DialogContent, 
+  DialogTitle, 
+  LinearProgress,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import DescriptionIcon from '@mui/icons-material/Description';
 import DeleteIcon from '@mui/icons-material/Delete';
+import EditNoteIcon from '@mui/icons-material/EditNote';
 import EditIcon from '@mui/icons-material/Edit';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import SurveyForm from './components/SurveyForm';
@@ -34,6 +40,7 @@ import DeleteConfirmationDialog from './components/DeleteConfirmationDialog';
 import Footer from './components/Footer';
 import InsightsIcon from '@mui/icons-material/Insights';
 import CalculateIcon from '@mui/icons-material/Calculate';
+import CloseIcon from '@mui/icons-material/Close';
 import '@fontsource/space-grotesk';
 import ApiService from './api';
 import SurveyAnalysisResults from './components/SurveyAnalysisResults';
@@ -65,8 +72,10 @@ function App() {
   const [deleteDialog, setDeleteDialog] = useState({ open: false, surveyId: null, surveyName: '' });
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingAnalysis, setIsLoadingAnalysis] = useState(false);
   const [apiError, setApiError] = useState(null);
   const [surveyAnalysis, setSurveyAnalysis] = useState(null);
+  const [analysisDialogOpen, setAnalysisDialogOpen] = useState(false);
 
   const appTheme = useTheme();
   const isMobile = useMediaQuery(appTheme.breakpoints.down('md'));
@@ -293,7 +302,7 @@ function App() {
       return;
     }
     
-    setIsLoading(true);
+    setIsLoadingAnalysis(true);
     setSurveyAnalysis(null);
     
     try {
@@ -321,7 +330,7 @@ function App() {
         severity: 'error'
       });
     } finally {
-      setIsLoading(false);
+      setIsLoadingAnalysis(false);
     }
   };
 
@@ -383,7 +392,7 @@ function App() {
   const handleCloseSnackbar = () => {
     setSnackbar({ ...snackbar, open: false });
   };
-
+  
   const drawer = (
     <Box sx={{ 
       width: drawerWidth, 
@@ -600,11 +609,26 @@ function App() {
                   <CalculateIcon sx={{ mr: 1, fontSize: 40, color: '#FB8500' }} />
                   Technology Adoption ROI Calculator
                 </Typography>
+                {currentSurvey ? (
+                <Alert 
+                  severity="info" 
+                  icon={<EditNoteIcon />}
+                  sx={{ 
+                    mb: 4, 
+                    display: 'flex', 
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Typography variant="body1">
+                    You are currently editing survey: <strong>{currentSurvey.name}</strong>
+                  </Typography>
+                </Alert>
+              ) : (
                 <Typography variant="body1" align="center" color="text.secondary" sx={{ mb: 4 }}>
-                  {currentSurvey 
-                    ? `Editing: ${currentSurvey.name}` 
-                    : 'Complete this survey to evaluate the ROI of your technology investment.'}
+                  Complete this survey to evaluate the ROI of your technology investment.
                 </Typography>
+              )}
                                 
                 {/* Analysis section for the submitted view */}
                 {currentSurvey && (
@@ -618,11 +642,14 @@ function App() {
                           variant="contained"
                           color="primary"
                           startIcon={<BarChartIcon />}
-                          onClick={() => getSurveyAnalysis(currentSurvey.name)}
-                          disabled={isLoading}
+                          onClick={() => {
+                            getSurveyAnalysis(currentSurvey.name);
+                            setAnalysisDialogOpen(true);
+                          }}
+                          disabled={isLoadingAnalysis}
                           sx={{ backgroundColor: "#219EBC", '&:hover': { backgroundColor: "#1A7A94" } }}
                         >
-                          {isLoading ? 'Analyzing...' : 'Analyze Results'}
+                          {isLoadingAnalysis ? 'Analyzing...' : 'Run Analysis'}
                         </Button>
                       </Box>
                       <Typography variant="body2" color="text.secondary">
@@ -631,9 +658,39 @@ function App() {
                     </Paper>
                     
                     {/* Show the analysis results if available */}
-                    {surveyAnalysis && (
-                      <SurveyAnalysisResults analysisData={surveyAnalysis} />
-                    )}
+                    <Dialog
+                      open={analysisDialogOpen}
+                      onClose={() => setAnalysisDialogOpen(false)}
+                      fullWidth
+                      maxWidth="md"
+                      scroll="paper"
+                      aria-labelledby="analysis-dialog-title"
+                    >
+                      <DialogTitle id="analysis-dialog-title">
+                        ROI Analysis Results
+                        <IconButton
+                          aria-label="close"
+                          onClick={() => setAnalysisDialogOpen(false)}
+                          sx={{ position: 'absolute', right: 8, top: 8 }}
+                        >
+                          <CloseIcon />
+                        </IconButton>
+                      </DialogTitle>
+                      <DialogContent dividers>
+                        {isLoadingAnalysis ? (
+                          <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+                            <LinearProgress color="success" />
+                          </Box>
+                        ) : surveyAnalysis ? (
+                          <SurveyAnalysisResults analysisData={surveyAnalysis} />
+                        ) : (
+                          <Typography>No analysis data available yet.</Typography>
+                        )}
+                      </DialogContent>
+                      {/* <DialogActions>
+                        <Button onClick={() => setAnalysisDialogOpen(false)}>Close</Button>
+                      </DialogActions> */}
+                    </Dialog>
                   </Box>
                 )}
                 <Box 
@@ -663,10 +720,10 @@ function App() {
                             color="primary"
                             startIcon={<BarChartIcon />}
                             onClick={() => getSurveyAnalysis(currentSurvey.name)}
-                            disabled={isLoading}
+                            disabled={isLoadingAnalysis}
                             sx={{ backgroundColor: "#219EBC", '&:hover': { backgroundColor: "#1A7A94" } }}
                           >
-                            {isLoading ? 'Analyzing...' : 'Run Analysis'}
+                            {isLoadingAnalysis ? 'Analyzing...' : 'Run Analysis'}
                           </Button>
                         </Box>
                         <Typography variant="body2" color="text.secondary">
