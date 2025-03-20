@@ -23,7 +23,6 @@ import {
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
 import SaveIcon from '@mui/icons-material/Save';
-import InsightsIcon from '@mui/icons-material/Insights';
 
 // Import or define your survey questions
 import { surveyQuestions } from './surveyQuestions';
@@ -272,15 +271,7 @@ function SurveyForm({ onSubmit, initialResponses = {}, onChange }) {
   };
 
   return (
-    <Paper 
-      elevation={3} 
-      sx={{ 
-        p: { xs: 2, sm: 3, md: 4 },  
-        width: '100%',               
-        maxWidth: '100%',            
-        overflowX: 'hidden'          
-      }}
-    >
+    <Paper sx={{ p: 3 }}>
       <Stepper 
         activeStep={activeStep} 
         sx={{ 
@@ -396,11 +387,10 @@ function SurveyForm({ onSubmit, initialResponses = {}, onChange }) {
             >
               Save Progress
             </Button>
-            {/* Next or Generate ROI Insights Button when it's the last page */}
             <Button
               variant="contained"
               onClick={activeStep === surveyQuestions.length - 1 ? handleSubmit : handleNext}
-              endIcon={activeStep === surveyQuestions.length - 1 ? <InsightsIcon /> : <NavigateNextIcon />}
+              endIcon={activeStep === surveyQuestions.length - 1 ? null : <NavigateNextIcon />}
               color="primary"
               sx={{
                 transition: 'all 0.3s ease',
@@ -411,7 +401,7 @@ function SurveyForm({ onSubmit, initialResponses = {}, onChange }) {
                 backgroundColor: "#219EBC"
               }}
             >
-              {activeStep === surveyQuestions.length - 1 ? 'Generate ROI Insights' : 'Next'}
+              {activeStep === surveyQuestions.length - 1 ? 'Submit' : 'Next'}
             </Button>
           </Box>
 
