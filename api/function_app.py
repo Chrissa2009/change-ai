@@ -148,6 +148,7 @@ def delete_survey(req: func.HttpRequest) -> func.HttpResponse:
 @app.function_name(name="PostSurveyAnalysis")
 @app.route(route="survey/analysis", methods=["POST"])
 def post_survey_analysis(req: func.HttpRequest) -> func.HttpResponse:
+    system_prompt = req.params.get('persona') if req.params.get('persona') else system_message.ROI_EXPERT_SYSTEM_MESSAGE
     request_body = None
     try:
         request_body = req.get_json()
@@ -191,7 +192,7 @@ def post_survey_analysis(req: func.HttpRequest) -> func.HttpResponse:
         openai_response = json.loads(
                 openai_utils.get_json_response(
                 client=openai_utils.get_client(api_key=api_key),
-                system_message=system_message.ROI_EXPERT_SYSTEM_MESSAGE,
+                system_message=system_prompt,
                 user_message=request_json,
                 response_class=analysis_schema.Response
             )
@@ -201,7 +202,7 @@ def post_survey_analysis(req: func.HttpRequest) -> func.HttpResponse:
         analysis = {
             "response": openai_response["analysis"],
             "request": request_body,
-            "persona": system_message.ROI_EXPERT_SYSTEM_MESSAGE,
+            "persona": system_prompt,
             "summary": summary
         }
         analysis_json = json.dumps(analysis)
