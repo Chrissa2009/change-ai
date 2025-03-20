@@ -1,6 +1,7 @@
 from azure.cosmos import CosmosClient
 from azure.cosmos.exceptions import CosmosResourceNotFoundError
 from azure.identity import DefaultAzureCredential
+from retry import exponential_backoff
 
 CONTAINER_NAME = "surveys"
 ID_KEY = "id"
@@ -16,11 +17,13 @@ def _get_container_client(client):
 def get_client():
     return CosmosClient(url=COSMOS_ENDPOINT, credential=DefaultAzureCredential())
 
+@exponential_backoff(initial_delay=1, retries=3)
 def list_surveys(client):
     container = _get_container_client(client)
     results = container.query_items(query=ID_QUERY, enable_cross_partition_query=True)
     return [d[ID_KEY] for d in results]
 
+@exponential_backoff(initial_delay=1, retries=3)
 def get_survey(client, name):
     container = _get_container_client(client)
     try:
@@ -28,6 +31,7 @@ def get_survey(client, name):
     except CosmosResourceNotFoundError:
         return None
 
+@exponential_backoff(initial_delay=1, retries=3)
 def put_survey(client, name, content):
     record = {}
     record[ID_KEY] = name
@@ -35,6 +39,7 @@ def put_survey(client, name, content):
     container = _get_container_client(client)
     container.upsert_item(body=record)
 
+@exponential_backoff(initial_delay=1, retries=3)
 def delete_survey(client, name):
     container = _get_container_client(client)
     try:
