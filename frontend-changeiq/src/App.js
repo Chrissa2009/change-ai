@@ -25,6 +25,8 @@ import {
   DialogContent, 
   DialogTitle, 
   LinearProgress,
+  Tooltip,
+  DialogActions,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
@@ -43,7 +45,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import '@fontsource/space-grotesk';
 import ApiService from './api';
 import SurveyAnalysisResults from './components/SurveyAnalysisResults';
-import BarChartIcon from '@mui/icons-material/BarChart';
+import QueryStatsIcon from '@mui/icons-material/QueryStats';
 
 const theme = createTheme({
   components: {
@@ -78,9 +80,7 @@ function App() {
 
   const appTheme = useTheme();
   const isMobile = useMediaQuery(appTheme.breakpoints.down('md'));
-  useEffect(() => {
-    console.log('Current responses state changed:', currentResponses);
-  }, [currentResponses]);
+
   useEffect(() => {
     const fetchSurveys = async () => {
       setIsLoading(true);
@@ -338,7 +338,7 @@ function App() {
     try {
       const newSurvey = {
         id: Date.now(),
-        name: `${survey.name} (Copy)`,
+        name: `${survey.name}-Copy`,
         responses: { ...survey.responses },
         dateCreated: new Date().toISOString(),
         dateModified: new Date().toISOString()
@@ -399,12 +399,44 @@ function App() {
       display: 'flex', 
       flexDirection: 'column'
     }}>
-      <Toolbar sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: '#023047' }}>
-        <InsightsIcon sx={{ mr: 1, fontSize: 40, color: '#FFB703' }} />
-        <Typography variant="h4" noWrap component="div" sx={{ display: 'flex', alignItems: 'center', fontFamily: '"Space Grotesk", sans-serif', color: "#FB8500" }}>
-          change.ai
+    <Toolbar sx={{ 
+      display: 'flex', 
+      justifyContent: 'center', 
+      alignItems: 'center', 
+      backgroundColor: '#023047' 
+    }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+        <Box>
+          <Typography 
+            variant="h4" 
+            noWrap 
+            component="div" 
+            sx={{ 
+              fontFamily: '"Space Grotesk", sans-serif', 
+              color: "#FB8500",
+              lineHeight: 1.2,
+              display: 'flex',
+              alignItems: 'center'
+            }}
+            >
+            <InsightsIcon sx={{ mr: 1, fontSize: 40, color: '#FFB703' }} />
+            change.ai
+          </Typography>
+        </Box>
+        <Typography 
+          variant="subtitle2" 
+          sx={{ 
+            color: '#8ecae6',
+            fontStyle: 'bold',
+            letterSpacing: 0.5,
+            fontSize: '0.85rem',
+            textAlign: 'center'
+          }}
+        >
+          AI Calculations. Human Decisions.
         </Typography>
-      </Toolbar>     
+      </Box>
+    </Toolbar>     
       <Divider />
       <Toolbar>
         <Typography variant="h6" noWrap component="div">
@@ -437,24 +469,38 @@ function App() {
                   sx={{ 
                     backgroundColor: currentSurvey && currentSurvey.id === survey.id ? 
                       'rgba(0, 0, 0, 0.08)' : 'inherit',
-                    py: 1
+                    py: 1,
                   }}
                 >
                   <ListItemIcon>
                     <DescriptionIcon />
                   </ListItemIcon>
-                  <ListItemText 
-                    primary={survey.name} 
-                    secondary={`Modified: ${new Date(survey.dateModified).toLocaleDateString()}`}
-                    primaryTypographyProps={{
-                      noWrap: true,
-                      style: { maxWidth: '120px' }
-                    }}
-                    secondaryTypographyProps={{
-                      noWrap: true,
-                      style: { maxWidth: '120px' }
-                    }}
-                  />
+                  <Tooltip 
+                    title={
+                      <Box>
+                        <Typography variant="subtitle2">{survey.name}</Typography>
+                        <Typography variant="body2" >
+                          Modified: {new Date(survey.dateModified).toLocaleString()}
+                        </Typography>
+                      </Box>
+                    }
+                    arrow
+                    placement="top"
+                    enterDelay={500}
+                  >
+                    <ListItemText 
+                      primary={survey.name} 
+                      secondary={`Modified: ${new Date(survey.dateModified).toLocaleDateString()}`}
+                      primaryTypographyProps={{
+                        noWrap: true,
+                        style: { maxWidth: '120px' }
+                      }}
+                      secondaryTypographyProps={{
+                        noWrap: true,
+                        style: { maxWidth: '120px' }
+                      }}
+                    />
+                  </Tooltip>
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                     <IconButton 
                       size="small" 
@@ -640,7 +686,7 @@ function App() {
                         <Button
                           variant="contained"
                           color="primary"
-                          startIcon={<BarChartIcon />}
+                          startIcon={<QueryStatsIcon />}
                           onClick={() => {
                             getSurveyAnalysis(currentSurvey.name);
                             setAnalysisDialogOpen(true);
@@ -666,7 +712,7 @@ function App() {
                       aria-labelledby="analysis-dialog-title"
                     >
                       <DialogTitle id="analysis-dialog-title">
-                        Technology Adoption ROI Calculation Results
+                        RESULTS
                         <IconButton
                           aria-label="close"
                           onClick={() => setAnalysisDialogOpen(false)}
@@ -686,9 +732,9 @@ function App() {
                           <Typography>No analysis data available yet.</Typography>
                         )}
                       </DialogContent>
-                      {/* <DialogActions>
-                        <Button onClick={() => setAnalysisDialogOpen(false)}>Close</Button>
-                      </DialogActions> */}
+                      <DialogActions>
+                        <Button onClick={() => setAnalysisDialogOpen(false)}>Download Report</Button>
+                      </DialogActions>
                     </Dialog>
                   </Box>
                 )}
@@ -705,37 +751,6 @@ function App() {
                     initialResponses={currentResponses}
                     onChange={handleFormChange}
                   />
-                  
-                  {!createNew && currentSurvey && (
-                    <Box sx={{ mt: 4, mb: 3 }}>
-                      <Divider sx={{ mb: 3 }} />
-                      <Paper sx={{ p: 3 }}>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                          <Typography variant="h6">
-                            ROI Analysis
-                          </Typography>
-                          <Button
-                            variant="contained"
-                            color="primary"
-                            startIcon={<BarChartIcon />}
-                            onClick={() => getSurveyAnalysis(currentSurvey.name)}
-                            disabled={isLoadingAnalysis}
-                            sx={{ backgroundColor: "#219EBC", '&:hover': { backgroundColor: "#1A7A94" } }}
-                          >
-                            {isLoadingAnalysis ? 'Analyzing...' : 'Run Analysis'}
-                          </Button>
-                        </Box>
-                        <Typography variant="body2" color="text.secondary">
-                          Generate an ROI analysis based on your current survey responses.
-                        </Typography>
-                      </Paper>
-                      
-                      {/* Show the analysis results */}
-                      {surveyAnalysis && (
-                        <SurveyAnalysisResults analysisData={surveyAnalysis} />
-                      )}
-                    </Box>
-                  )}
                 </Box>
               </>
             ) : (
