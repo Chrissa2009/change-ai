@@ -23,7 +23,6 @@ import {
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
 import SaveIcon from '@mui/icons-material/Save';
-import InsightsIcon from '@mui/icons-material/Insights';
 
 // Import or define your survey questions
 import { surveyQuestions } from './surveyQuestions';
