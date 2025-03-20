@@ -4,20 +4,11 @@ import {
   Box,
   Typography,
   Paper,
-  Divider,
-  List,
-  ListItem,
-  ListItemText,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  Chip,
   Grid,
   Card,
   CardContent,
   CardHeader
 } from '@mui/material';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
