@@ -337,7 +337,7 @@ function App() {
     try {
       const newSurvey = {
         id: Date.now(),
-        name: `${survey.name} (Copy)`,
+        name: `${survey.name}-Copy`,
         responses: { ...survey.responses },
         dateCreated: new Date().toISOString(),
         dateModified: new Date().toISOString()
