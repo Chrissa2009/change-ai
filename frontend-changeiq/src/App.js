@@ -78,9 +78,7 @@ function App() {
 
   const appTheme = useTheme();
   const isMobile = useMediaQuery(appTheme.breakpoints.down('md'));
-  useEffect(() => {
-    console.log('Current responses state changed:', currentResponses);
-  }, [currentResponses]);
+
   useEffect(() => {
     const fetchSurveys = async () => {
       setIsLoading(true);
@@ -666,7 +664,7 @@ function App() {
                       aria-labelledby="analysis-dialog-title"
                     >
                       <DialogTitle id="analysis-dialog-title">
-                        Technology Adoption ROI Calculation Results
+                        RESULTS
                         <IconButton
                           aria-label="close"
                           onClick={() => setAnalysisDialogOpen(false)}
@@ -705,37 +703,6 @@ function App() {
                     initialResponses={currentResponses}
                     onChange={handleFormChange}
                   />
-                  
-                  {!createNew && currentSurvey && (
-                    <Box sx={{ mt: 4, mb: 3 }}>
-                      <Divider sx={{ mb: 3 }} />
-                      <Paper sx={{ p: 3 }}>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                          <Typography variant="h6">
-                            ROI Analysis
-                          </Typography>
-                          <Button
-                            variant="contained"
-                            color="primary"
-                            startIcon={<BarChartIcon />}
-                            onClick={() => getSurveyAnalysis(currentSurvey.name)}
-                            disabled={isLoadingAnalysis}
-                            sx={{ backgroundColor: "#219EBC", '&:hover': { backgroundColor: "#1A7A94" } }}
-                          >
-                            {isLoadingAnalysis ? 'Analyzing...' : 'Run Analysis'}
-                          </Button>
-                        </Box>
-                        <Typography variant="body2" color="text.secondary">
-                          Generate an ROI analysis based on your current survey responses.
-                        </Typography>
-                      </Paper>
-                      
-                      {/* Show the analysis results */}
-                      {surveyAnalysis && (
-                        <SurveyAnalysisResults analysisData={surveyAnalysis} />
-                      )}
-                    </Box>
-                  )}
                 </Box>
               </>
             ) : (
