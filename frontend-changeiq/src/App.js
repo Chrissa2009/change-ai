@@ -666,7 +666,7 @@ function App() {
                       aria-labelledby="analysis-dialog-title"
                     >
                       <DialogTitle id="analysis-dialog-title">
-                        ROI Analysis Results
+                        Technology Adoption ROI Calculation Results
                         <IconButton
                           aria-label="close"
                           onClick={() => setAnalysisDialogOpen(false)}

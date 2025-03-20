@@ -41,7 +41,7 @@ const SurveyAnalysisResults = ({ analysisData }) => {
     <Box sx={{ mt: 4 }}>
       <Typography variant="h5" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
         <MonetizationOnIcon sx={{ mr: 1 }} />
-        Technology Adoption Analysis Results
+        ROI Analysis
       </Typography>
       
       {/* Summary Section */}
