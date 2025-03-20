@@ -2,6 +2,11 @@ import azure.functions as func
 import logging
 import json
 import db_utils
+import openai_utils
+import pydantic
+import analysis_schema
+import system_message
+import keyvault_utils
 
 app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
 
@@ -70,7 +75,15 @@ def upsert_survey(req: func.HttpRequest) -> func.HttpResponse:
             mimetype='application/json',
             status_code=400
         )
-    request_body = req.get_json() 
+    request_body = None
+    try:
+        request_body = req.get_json()
+    except ValueError as e:
+        return func.HttpResponse(
+            json.dumps({"error": repr(e)}),
+            mimetype='application/json',
+            status_code=400
+        )
     if not request_body:
         response_body = {"error": "Malformed request, missing content in request body."}
         logging.error(f"PUT survey error: {response_body}")
@@ -132,10 +145,29 @@ def delete_survey(req: func.HttpRequest) -> func.HttpResponse:
 
 @app.function_name(name="GetSurveyAnalysis")
 @app.route(route="survey/analysis", methods=["GET"])
-def get_survey(req: func.HttpRequest) -> func.HttpResponse:
-    survey_name = req.params.get('surveyName')
-    if not survey_name:
-        response_body = {"error": "Malformed request, missing surveyName request parameter."}
+def get_survey_analysis(req: func.HttpRequest) -> func.HttpResponse:
+    request_body = None
+    try:
+        request_body = req.get_json()
+    except ValueError as e:
+        return func.HttpResponse(
+            json.dumps({"error": repr(e)}),
+            mimetype='application/json',
+            status_code=400
+        )
+    if not request_body:
+        response_body = {"error": "Malformed request, missing content in request body."}
+        logging.error(f"GET survey analysis error: {response_body}")
+        return func.HttpResponse(
+            json.dumps(response_body),
+            mimetype='application/json',
+            status_code=400
+        )
+    request_json = None
+    try:
+        request_json = json.dumps(request_body)
+    except TypeError as e:
+        response_body = {"error": "Malformed request, unable to serialize request body."}
         logging.error(f"GET survey analysis error: {response_body}")
         return func.HttpResponse(
             json.dumps(response_body),
@@ -143,40 +175,26 @@ def get_survey(req: func.HttpRequest) -> func.HttpResponse:
             status_code=400
         )
     try:
-        survey = db_utils.get_survey(db_utils.get_client(), survey_name)
-        if not survey:
-            return func.HttpResponse(
-                json.dumps({}),
-                mimetype='application/json',
-                status_code=404
-            )
-
-        analysis = {
-            "surveyName": "foo",
-            "roi": {
-                "value": 0.9,
-                "explanation": "This is a reason the roi is this value"
-            },
-            "insights": [
-                {
-                    "title": "This is the insight title", 
-                    "description": "This is a description of the insight.",
-                    "contents": "This is the insight contents"
-                }
-            ],
-            "recommendations": [
-                {
-                    "title": "This is the recommendation title",
-                    "description": "This is a description of the recommendation.",
-                    "contents": "This is the recommendations contents"
-                }
-            ]
-        }
-
-        logging.info(f"GET survey analysis response: {analysis}")
-
+        analysis_schema.Request.model_validate_json(request_json)
+    except pydantic.ValidationError as e:
+        response_body = {"error": f"Malformed request, request does not follow expected schema: {repr(e)}"}
+        logging.error(f"GET survey analysis error: {response_body}")
         return func.HttpResponse(
-            json.dumps(analysis),
+            json.dumps(response_body),
+            mimetype='application/json',
+            status_code=400
+        )
+    try:
+        api_key = keyvault_utils.get_secret(keyvault_utils.get_client(), "OpenAI")
+        analysis_json = openai_utils.get_json_response(
+            client=openai_utils.get_client(api_key=api_key),
+            system_message=system_message.ROI_EXPERT_SYSTEM_MESSAGE,
+            user_message=request_json,
+            response_class=analysis_schema.Response
+        )
+        logging.info(f"GET survey analysis response: {analysis_json}")
+        return func.HttpResponse(
+            analysis_json,
             mimetype='application/json',
             status_code=200
         )
