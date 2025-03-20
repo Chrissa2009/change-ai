@@ -44,7 +44,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import '@fontsource/space-grotesk';
 import ApiService from './api';
 import SurveyAnalysisResults from './components/SurveyAnalysisResults';
-import BarChartIcon from '@mui/icons-material/BarChart';
+import QueryStatsIcon from '@mui/icons-material/QueryStats';
 
 const theme = createTheme({
   components: {
@@ -468,7 +468,7 @@ function App() {
                   sx={{ 
                     backgroundColor: currentSurvey && currentSurvey.id === survey.id ? 
                       'rgba(0, 0, 0, 0.08)' : 'inherit',
-                    py: 1
+                    py: 1,
                   }}
                 >
                   <ListItemIcon>
@@ -685,7 +685,7 @@ function App() {
                         <Button
                           variant="contained"
                           color="primary"
-                          startIcon={<BarChartIcon />}
+                          startIcon={<QueryStatsIcon />}
                           onClick={() => {
                             getSurveyAnalysis(currentSurvey.name);
                             setAnalysisDialogOpen(true);
