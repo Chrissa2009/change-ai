@@ -14,10 +14,14 @@ class Recommendation(BaseModel):
     description: str
     contents: str
 
-class Response(BaseModel):
+class Analysis(BaseModel):
     roi: Roi
     insights: list[Insight]
     recommendations: list[Recommendation]
+
+class Response(BaseModel):
+    analysis: Analysis
+    summary: str
 
 class Form(BaseModel):
     category: str

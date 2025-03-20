@@ -9,3 +9,4 @@ cryptography==43.0.3
 openai
 pydantic
 azure-keyvault-secrets
+azure-storage-blob
