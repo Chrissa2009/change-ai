@@ -1,3 +1,4 @@
+// currently, this component is not used in the app, but it can be used to display survey results
 import React from 'react';
 import { 
   Box, 
