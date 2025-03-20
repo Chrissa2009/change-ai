@@ -145,9 +145,9 @@ def delete_survey(req: func.HttpRequest) -> func.HttpResponse:
             status_code=500
         )
 
-@app.function_name(name="GetSurveyAnalysis")
-@app.route(route="survey/analysis", methods=["GET"])
-def get_survey_analysis(req: func.HttpRequest) -> func.HttpResponse:
+@app.function_name(name="PostSurveyAnalysis")
+@app.route(route="survey/analysis", methods=["POST"])
+def post_survey_analysis(req: func.HttpRequest) -> func.HttpResponse:
     request_body = None
     try:
         request_body = req.get_json()
@@ -159,7 +159,7 @@ def get_survey_analysis(req: func.HttpRequest) -> func.HttpResponse:
         )
     if not request_body:
         response_body = {"error": "Malformed request, missing content in request body."}
-        logging.error(f"GET survey analysis error: {response_body}")
+        logging.error(f"POST survey analysis error: {response_body}")
         return func.HttpResponse(
             json.dumps(response_body),
             mimetype='application/json',
@@ -170,7 +170,7 @@ def get_survey_analysis(req: func.HttpRequest) -> func.HttpResponse:
         request_json = json.dumps(request_body)
     except TypeError as e:
         response_body = {"error": "Malformed request, unable to serialize request body."}
-        logging.error(f"GET survey analysis error: {response_body}")
+        logging.error(f"POST survey analysis error: {response_body}")
         return func.HttpResponse(
             json.dumps(response_body),
             mimetype='application/json',
@@ -180,7 +180,7 @@ def get_survey_analysis(req: func.HttpRequest) -> func.HttpResponse:
         analysis_schema.Request.model_validate_json(request_json)
     except pydantic.ValidationError as e:
         response_body = {"error": f"Malformed request, request does not follow expected schema: {repr(e)}"}
-        logging.error(f"GET survey analysis error: {response_body}")
+        logging.error(f"POST survey analysis error: {response_body}")
         return func.HttpResponse(
             json.dumps(response_body),
             mimetype='application/json',
@@ -196,7 +196,7 @@ def get_survey_analysis(req: func.HttpRequest) -> func.HttpResponse:
                 response_class=analysis_schema.Response
             )
         )
-        logging.info(f"GET survey analysis OpenAI response: {openai_response}")
+        logging.info(f"POST survey analysis OpenAI response: {openai_response}")
         summary = openai_response["summary"]
         analysis = {
             "response": openai_response["analysis"],
@@ -225,14 +225,14 @@ def get_survey_analysis(req: func.HttpRequest) -> func.HttpResponse:
             "summary": summary_url,
             "analysis": analysis_url
         }
-        logging.info(f"GET survey analysis response: {response}")
+        logging.info(f"POST survey analysis response: {response}")
         return func.HttpResponse(
             json.dumps(response),
             mimetype='application/json',
             status_code=200
         )
     except Exception as e:
-        logging.error(f"GET survey analysis error: {e}")
+        logging.error(f"POST survey analysis error: {e}")
         return func.HttpResponse(
             json.dumps({"error": repr(e)}),
             mimetype='application/json',
