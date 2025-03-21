@@ -811,7 +811,8 @@ useEffect(() => {
                           </Box>
                         ) : surveyAnalysis ? (
                           <SurveyAnalysisResults 
-                            analysisData={surveyAnalysis}             
+                            analysisData={surveyAnalysis}
+                            surveyData={currentResponses}             
                             ref={surveyResultsRef} 
                           />
                         ) : (

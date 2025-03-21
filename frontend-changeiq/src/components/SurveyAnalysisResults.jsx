@@ -18,14 +18,16 @@ import LightbulbIcon from '@mui/icons-material/Lightbulb';
 import RecommendIcon from '@mui/icons-material/Recommend';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import AssessmentIcon from '@mui/icons-material/Assessment';
+import EqualizerIcon from '@mui/icons-material/Equalizer';
+import WaterfallChart from './Chart/WaterfallChart';
 
 // Convert component to use forwardRef
-const SurveyAnalysisResults = forwardRef(({ analysisData }, ref) => {
+const SurveyAnalysisResults = forwardRef(({ analysisData, surveyData }, ref) => {
   const [expandedState, setExpandedState] = useState({
-    panel1: true,
-    panel2: true,
-    panel3: true,
-    panel4: true, // Added panel4 for summary
+    panel1: true, // ROI Summary
+    panel2: true, // Insights
+    panel3: true, // Recommendations
+    panel4: true, // Chart
   });
 
   // Create a ref for the content container
@@ -180,6 +182,16 @@ const SurveyAnalysisResults = forwardRef(({ analysisData }, ref) => {
                   </Typography>
                 </Box>
               )}
+              { analysisData && analysisData.summaryData && (
+                <Box sx={{ mt: 2 }}>
+                <Typography variant="subtitle2" color="text.secondary">
+                  Summary
+                </Typography>
+                <Typography variant="body1">
+                {analysisData.summaryData}
+                </Typography>
+              </Box>
+              )}
             </Grid>
           </Grid>
         </AccordionDetails>
@@ -288,36 +300,49 @@ const SurveyAnalysisResults = forwardRef(({ analysisData }, ref) => {
           </AccordionDetails>
         </Accordion>
       )}
-      
-      {/* Additional Data - Summary Accordion */}
-      {analysisData.summaryData && (
+
+      {/* Financial Visualization Accordion with Waterfall Chart */}
         <Accordion 
-          expanded={expandedState.panel4} 
-          onChange={handleAccordionToggle('panel4')}
-          sx={{ 
+        expanded={expandedState.panel4} 
+        onChange={handleAccordionToggle('panel4')}
+        sx={{ 
+            mb: 2, 
             '&.Mui-expanded': {
-              boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)'
+            boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)'
+            },    
+            overflow: 'visible',
+            '& .MuiCollapse-root': {
+              overflow: 'visible'
             }
-          }}
+        }}
         >
-          <AccordionSummary
+        <AccordionSummary
             expandIcon={<ExpandMoreIcon />}
             aria-controls="panel4-content"
             id="panel4-header"
             sx={{ backgroundColor: 'rgba(33, 158, 188, 0.08)' }}
-          >
+        >
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <AssessmentIcon sx={{ mr: 1, color: '#219EBC' }} />
-              <Typography variant="h6">Summary</Typography>
+                <EqualizerIcon sx={{ mr: 1, color: '#219EBC' }} />
+                <Typography variant="h6">Financial Impact Breakdown</Typography>
             </Box>
-          </AccordionSummary>
-          <AccordionDetails>
-            <Typography variant="body1">
-              {analysisData.summaryData}
-            </Typography>
-          </AccordionDetails>
+        </AccordionSummary>
+        <AccordionDetails sx={{ 
+    // Remove fixed padding bottom
+            py: 2, 
+            px: { xs: 1, sm: 2 },
+            // Allow content to determine size
+            display: 'flex', 
+            flexDirection: 'column',
+            minHeight: 600, // Provide minimum height for chart
+            overflow: 'visible' // Important: allow content to be visible
+        }}>
+                <WaterfallChart 
+                    financialData={surveyData}
+                    title="Cost-Benefit Waterfall Analysis" 
+                />
+        </AccordionDetails>
         </Accordion>
-      )}
       
       {/* Add a footer that will only appear in the PDF */}
       <Box 
