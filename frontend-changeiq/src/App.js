@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Box, 
   Typography, 
@@ -48,6 +48,7 @@ import ApiService from './api';
 import SurveyAnalysisResults from './components/SurveyAnalysisResults';
 import QueryStatsIcon from '@mui/icons-material/QueryStats';
 import { surveyQuestions } from './components/surveyQuestions';
+import { generatePDF } from './components/pdfUtils';
 
 const theme = createTheme({
   components: {
@@ -79,8 +80,12 @@ function App() {
   const [apiError, setApiError] = useState(null);
   const [surveyAnalysis, setSurveyAnalysis] = useState(null);
   const [analysisDialogOpen, setAnalysisDialogOpen] = useState(false);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+
   const appTheme = useTheme();
   const isMobile = useMediaQuery(appTheme.breakpoints.down('md'));
+  // Create a ref to the SurveyAnalysisResults component
+  const surveyResultsRef = useRef(null);
 
   useEffect(() => {
     const fetchSurveys = async () => {
@@ -292,6 +297,23 @@ function App() {
     }
   };
   
+    // Handle PDF download
+    const handlePdfDownload = async () => {
+      if (!surveyAnalysis) return;
+      
+      setIsGeneratingPDF(true);
+      
+      try {
+        await generatePDF(surveyResultsRef);
+        // You could show a success message here
+      } catch (error) {
+        console.error('Failed to generate PDF:', error);
+        // You could show an error message here
+      } finally {
+        setIsGeneratingPDF(false);
+      }
+    };
+
   const transformResponsesToApiFormat = (responses) => {
     // Initialize the output object with forms array
     const transformedData = {
@@ -348,7 +370,7 @@ function App() {
     
     try {
       const transformedData = transformResponsesToApiFormat(responses);
-      console.log('Analysis response sent:', transformedData);
+      // console.log('Analysis response sent:', transformedData);
       const analysisData = await ApiService.fetchSurveyAnalysis(surveyName, transformedData);
       
       // console.log('Analysis data received:', analysisData);
@@ -364,9 +386,7 @@ function App() {
       });
       
       setSurveyAnalysis(analysisData);
-      console.log('setSurveyAnalysis(analysisData):', surveyAnalysis);
-
-    
+      // console.log('setSurveyAnalysis(analysisData):', surveyAnalysis);
   
     } catch (error) {
       console.error('Error getting survey analysis:', error);
@@ -759,7 +779,7 @@ function App() {
                       aria-labelledby="analysis-dialog-title"
                     >
                       <DialogTitle id="analysis-dialog-title">
-                        RESULTS
+                        ANALYSIS RESULTS
                         <IconButton
                           aria-label="close"
                           onClick={() => setAnalysisDialogOpen(false)}
@@ -774,19 +794,25 @@ function App() {
                             <LinearProgress color="success" />
                           </Box>
                         ) : surveyAnalysis ? (
-                          <SurveyAnalysisResults analysisData={surveyAnalysis} />
+                          <SurveyAnalysisResults 
+                            analysisData={surveyAnalysis}             
+                            ref={surveyResultsRef} 
+                          />
                         ) : (
                           <Typography>No analysis data found.</Typography>
                         )}
                       </DialogContent>
                       <DialogActions>
                         <Button 
-                          onClick={() => setAnalysisDialogOpen(false)} 
-                          disabled={!surveyAnalysis} 
+                          onClick={handlePdfDownload} 
+                          disabled={!surveyAnalysis || isGeneratingPDF} 
                           variant='outlined'
-                          endIcon={<FileDownloadIcon />}
+                          endIcon={isGeneratingPDF ?
+                            <CircularProgress size={20} color="inherit" /> : 
+                            <FileDownloadIcon />
+                          }
                         >
-                          Download Report
+                          {isGeneratingPDF ? 'Generating PDF...' : 'Download PDF Report'}
                         </Button>
                       </DialogActions>
                     </Dialog>

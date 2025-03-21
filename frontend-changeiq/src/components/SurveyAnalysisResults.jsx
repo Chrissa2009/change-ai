@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+// SurveyAnalysisResults.js
+import React, { useState, useRef, forwardRef, useImperativeHandle } from 'react';
 import {
   Box,
   Typography,
@@ -18,12 +19,40 @@ import RecommendIcon from '@mui/icons-material/Recommend';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 
-const SurveyAnalysisResults = ({ analysisData }) => {
+// Convert component to use forwardRef
+const SurveyAnalysisResults = forwardRef(({ analysisData }, ref) => {
   const [expandedState, setExpandedState] = useState({
     panel1: true,
     panel2: true,
     panel3: true,
+    panel4: true, // Added panel4 for summary
   });
+
+  // Create a ref for the content container
+  const contentRef = useRef(null);
+
+  // Expose methods to parent components through ref
+  useImperativeHandle(ref, () => ({
+    // Method to expand all panels for PDF generation
+    expandAllPanels: () => {
+      setExpandedState({
+        panel1: true,
+        panel2: true,
+        panel3: true,
+        panel4: true,
+      });
+    },
+    // Method to get the content DOM element for PDF generation
+    getContentElement: () => contentRef.current,
+    // Method to restore original panel state
+    restorePanelState: (originalState) => {
+      setExpandedState(originalState);
+    },
+    // Method to get current panel state
+    getCurrentPanelState: () => {
+      return {...expandedState};
+    }
+  }));
 
   // Toggle individual panel expanded state
   const handleAccordionToggle = (panelId) => (event, isExpanded) => {
@@ -42,8 +71,6 @@ const SurveyAnalysisResults = ({ analysisData }) => {
       </Paper>
     );
   }
-
-  console.log('Rendering analysis results with data:', analysisData);
 
   // Format percentage for display
   const formatPercentage = (value) => {
@@ -81,7 +108,23 @@ const SurveyAnalysisResults = ({ analysisData }) => {
   const isRoiPercentage = roiValue >= -1 && roiValue <= 1;
   
   return (
-    <Box sx={{ mt: 1 }}>
+    <Box sx={{ mt: 1 }} ref={contentRef}>
+      {/* Add a title section that will only appear in the PDF */}
+      <Box 
+        id="pdf-title-section" 
+        sx={{ 
+          mb: 3, 
+          textAlign: 'center', 
+          display: 'none', // Hidden by default, will be shown for PDF
+          pt: 3, pb: 2 
+        }}
+      >
+        <Typography variant="h4">Survey Analysis Report</Typography>
+        <Typography variant="subtitle1" color="text.secondary">
+          {new Date().toLocaleDateString()}
+        </Typography>
+      </Box>
+      
       {/* ROI Summary Accordion */}
       <Accordion 
         expanded={expandedState.panel1} 
@@ -174,7 +217,9 @@ const SurveyAnalysisResults = ({ analysisData }) => {
                     sx={{ 
                       border: 'none',
                       boxShadow: 'none'
-                    }}>
+                    }}
+                    className="no-break" // Added for PDF page breaks
+                  >
                     <CardHeader 
                       title={insight.title}
                       subheader={insight.description}
@@ -224,7 +269,9 @@ const SurveyAnalysisResults = ({ analysisData }) => {
                     sx={{ 
                       border: 'none',
                       boxShadow: 'none'
-                    }}>
+                    }}
+                    className="no-break" // Added for PDF page breaks
+                  >
                     <CardHeader 
                       title={recommendation.title}
                       subheader={recommendation.description}
@@ -271,8 +318,25 @@ const SurveyAnalysisResults = ({ analysisData }) => {
           </AccordionDetails>
         </Accordion>
       )}
+      
+      {/* Add a footer that will only appear in the PDF */}
+      <Box 
+        id="pdf-footer-section" 
+        sx={{ 
+          mt: 4, 
+          pt: 2, 
+          borderTop: '1px solid #eee', 
+          textAlign: 'center', 
+          display: 'none', // Hidden by default, will be shown for PDF
+          pb: 3 
+        }}
+      >
+        <Typography variant="body2" color="text.secondary">
+          Generated on by ChangeAI on {new Date().toLocaleString()}
+        </Typography>
+      </Box>
     </Box>
   );
-};
+});
 
 export default SurveyAnalysisResults;

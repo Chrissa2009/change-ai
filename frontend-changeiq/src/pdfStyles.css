@@ -1,0 +1,24 @@
+/* pdfStyles.css */
+@media print {
+    /* Custom styles for PDF output */
+    body {
+      -webkit-print-color-adjust: exact !important;
+      color-adjust: exact !important;
+    }
+    
+    .MuiAccordion-root {
+      page-break-inside: avoid !important;
+    }
+    
+    .MuiCardContent-root {
+      page-break-inside: avoid !important;
+    }
+    
+    /* Ensure headers don't get cut off */
+    h1, h2, h3, h4, h5, h6 {
+      page-break-after: avoid !important;
+    }
+    
+    /* Add more custom styles as needed */
+  }
+  
