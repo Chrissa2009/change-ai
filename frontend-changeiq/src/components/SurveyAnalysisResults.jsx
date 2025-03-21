@@ -309,6 +309,10 @@ const SurveyAnalysisResults = forwardRef(({ analysisData, surveyData }, ref) => 
             mb: 2, 
             '&.Mui-expanded': {
             boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)'
+            },    
+            overflow: 'visible',
+            '& .MuiCollapse-root': {
+              overflow: 'visible'
             }
         }}
         >
@@ -319,15 +323,24 @@ const SurveyAnalysisResults = forwardRef(({ analysisData, surveyData }, ref) => 
             sx={{ backgroundColor: 'rgba(33, 158, 188, 0.08)' }}
         >
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <EqualizerIcon sx={{ mr: 1, color: '#219EBC' }} />
-            <Typography variant="h6">Financial Impact Breakdown</Typography>
+                <EqualizerIcon sx={{ mr: 1, color: '#219EBC' }} />
+                <Typography variant="h6">Financial Impact Breakdown</Typography>
             </Box>
         </AccordionSummary>
-        <AccordionDetails sx={{pb: 4}}>
-            <WaterfallChart 
-                financialData={surveyData}
-                title="Cost-Benefit Waterfall Analysis" 
-            />
+        <AccordionDetails sx={{ 
+    // Remove fixed padding bottom
+            py: 2, 
+            px: { xs: 1, sm: 2 },
+            // Allow content to determine size
+            display: 'flex', 
+            flexDirection: 'column',
+            minHeight: 600, // Provide minimum height for chart
+            overflow: 'visible' // Important: allow content to be visible
+        }}>
+                <WaterfallChart 
+                    financialData={surveyData}
+                    title="Cost-Benefit Waterfall Analysis" 
+                />
         </AccordionDetails>
         </Accordion>
       

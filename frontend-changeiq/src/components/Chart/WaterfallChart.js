@@ -218,7 +218,7 @@ console.log('Chart Data for table:', chartData.map(item => ({
 })));
 
   return (
-    <Box sx={{ width: '100%', height: 550, mt: 2, mb: 2 }}>
+    <Box sx={{ width: '100%', mt: 2, mb: 2 }}>
       <Typography variant="h6" align="center" gutterBottom>
         {title}
       </Typography>
@@ -240,61 +240,75 @@ console.log('Chart Data for table:', chartData.map(item => ({
       >
         Net Financial Impact: {formatCurrency(finalImpact)}
       </Typography>
-      
-      <ResponsiveContainer width="100%" height="82%">
-        <BarChart
-          data={chartData}
-          margin={{ top: 30, right: 30, left: 20, bottom: 80 }}
-          barCategoryGap={2}
-        >
-          <CartesianGrid strokeDasharray="3 3" vertical={false} />
-          <XAxis 
-            dataKey="name" 
-            tick={{ fill: theme.palette.text.secondary, fontSize: 12 }}
-            angle={-45}  // Rotate text by -45 degrees
-            textAnchor="end"  // Align text at the end
-            height={60}  // Increase height for rotated labels
-            interval={0}  // Display all labels
-          />
-          <YAxis 
-            tickFormatter={formatCurrency}
-            domain={[-maxValue, maxValue]}
-            tickLine={false}
-            axisLine={{ stroke: theme.palette.divider }}
-            tick={{ fontSize: 12, fill: theme.palette.text.secondary }}
-          />
-          <Tooltip content={<CustomTooltip />} />
-          <Legend verticalAlign="top" height={36} />
-          <ReferenceLine y={0} stroke={theme.palette.divider} strokeWidth={2} />
-          <defs>
-            <linearGradient id="colorPositive" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor={theme.palette.success.light} stopOpacity={0.8}/>
-              <stop offset="95%" stopColor={theme.palette.success.light} stopOpacity={0.6}/>
-            </linearGradient>
-            <linearGradient id="colorNegative" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor={theme.palette.error.light} stopOpacity={0.8}/>
-              <stop offset="95%" stopColor={theme.palette.error.light} stopOpacity={0.6}/>
-            </linearGradient>
-          </defs>
-          
-          {/* Main bars */}
-          <Bar 
-            dataKey="value" 
-            radius={[4, 4, 0, 0]} 
-            isAnimationActive={true}
-            animationDuration={800}
-            animationEasing="ease-in-out"
+
+      {/* Chart Component */}
+      <Box sx={{ 
+        width: '100%', 
+        mb: 4,
+        overflow: 'hidden' // Ensure chart stays within container
+      }}>
+        <ResponsiveContainer width="100%" height="82%">
+          <BarChart
+            data={chartData}
+            margin={{ top: 30, right: 30, left: 20, bottom: 80 }}
+            barCategoryGap={2}
           >
-            <LabelList dataKey="value" content={<CustomizedLabel />} />
-            {chartData.map((entry, index) => (
-              <Cell 
-                key={`cell-${index}`} 
-                fill={entry.fill || (entry.value >= 0 ? 'url(#colorPositive)' : 'url(#colorNegative)')} 
-              />
-            ))}
-          </Bar>
-        </BarChart>
-              {/* Add data table */}
+            <CartesianGrid strokeDasharray="3 3" vertical={false} />
+            <XAxis 
+              dataKey="name" 
+              tick={{ fill: theme.palette.text.secondary, fontSize: 12 }}
+              angle={-45}  // Rotate text by -45 degrees
+              textAnchor="end"  // Align text at the end
+              height={60}  // Increase height for rotated labels
+              interval={0}  // Display all labels
+            />
+            <YAxis 
+              tickFormatter={formatCurrency}
+              domain={[-maxValue, maxValue]}
+              tickLine={false}
+              axisLine={{ stroke: theme.palette.divider }}
+              tick={{ fontSize: 12, fill: theme.palette.text.secondary }}
+            />
+            <Tooltip content={<CustomTooltip />} />
+            <Legend verticalAlign="top" height={36} />
+            <ReferenceLine y={0} stroke={theme.palette.divider} strokeWidth={2} />
+            <defs>
+              <linearGradient id="colorPositive" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor={theme.palette.success.light} stopOpacity={0.8}/>
+                <stop offset="95%" stopColor={theme.palette.success.light} stopOpacity={0.6}/>
+              </linearGradient>
+              <linearGradient id="colorNegative" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor={theme.palette.error.light} stopOpacity={0.8}/>
+                <stop offset="95%" stopColor={theme.palette.error.light} stopOpacity={0.6}/>
+              </linearGradient>
+            </defs>
+            
+            {/* Main bars */}
+            <Bar 
+              dataKey="value" 
+              radius={[4, 4, 0, 0]} 
+              isAnimationActive={true}
+              animationDuration={800}
+              animationEasing="ease-in-out"
+            >
+              <LabelList dataKey="value" content={<CustomizedLabel />} />
+              {chartData.map((entry, index) => (
+                <Cell 
+                  key={`cell-${index}`} 
+                  fill={entry.fill || (entry.value >= 0 ? 'url(#colorPositive)' : 'url(#colorNegative)')} 
+                />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </Box>
+
+      {/* Add data table */}
+      <Box sx={{ 
+        width: '100%',
+        overflowX: 'auto', // Enable horizontal scrolling if needed
+        mt: 2
+      }}>
       <TableContainer component={Paper} sx={{ mt: 3, mb: 2 }}>
         <Table size="small" aria-label="financial breakdown table">
           <TableHead>
@@ -340,10 +354,16 @@ console.log('Chart Data for table:', chartData.map(item => ({
           </TableBody>
         </Table>
       </TableContainer>
-      <Typography variant="body2" align="center" color="text.secondary" sx={{ mt: 1 }}>
-        This chart shows the financial impact breakdown of implementing this technology solution
-      </Typography>
-      </ResponsiveContainer>
+      </Box>
+
+      <Box sx={{ mt: 2, width: '100%' }}>
+        <Paper variant="outlined" sx={{ p: 2 }}>
+          {/* Summary card content */}
+          <Typography variant="body2" align="center" color="text.secondary" sx={{ mt: 1 }}>
+            This chart shows the financial impact breakdown of implementing this technology solution
+          </Typography>
+        </Paper>
+      </Box>
     </Box>
   );
 };
