@@ -220,12 +220,11 @@ const WaterfallChart = ({ financialData, title = "Cost-Benefit Analysis" }) => {
           <CartesianGrid strokeDasharray="3 3" vertical={false} />
           <XAxis 
             dataKey="name" 
-            interval={0}
-            tickLine={false}
-            angle={0}
-            textAnchor="middle"
-            height={60}
-            tick={{ fontSize: 12, fill: theme.palette.text.secondary }}
+            tick={{ fill: theme.palette.text.secondary, fontSize: 12 }}
+            angle={-45}  // Rotate text by -45 degrees
+            textAnchor="end"  // Align text at the end
+            height={60}  // Increase height for rotated labels
+            interval={0}  // Display all labels
           />
           <YAxis 
             tickFormatter={formatCurrency}
@@ -265,11 +264,10 @@ const WaterfallChart = ({ financialData, title = "Cost-Benefit Analysis" }) => {
             ))}
           </Bar>
         </BarChart>
-      </ResponsiveContainer>
-      
       <Typography variant="body2" align="center" color="text.secondary" sx={{ mt: 1 }}>
         This chart shows the financial impact breakdown of implementing this technology solution
       </Typography>
+      </ResponsiveContainer>
     </Box>
   );
 };

@@ -323,7 +323,7 @@ const SurveyAnalysisResults = forwardRef(({ analysisData, surveyData }, ref) => 
             <Typography variant="h6">Financial Impact Breakdown</Typography>
             </Box>
         </AccordionSummary>
-        <AccordionDetails>
+        <AccordionDetails sx={{pb: 4}}>
             <WaterfallChart 
                 financialData={surveyData}
                 title="Cost-Benefit Waterfall Analysis" 
