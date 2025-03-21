@@ -217,6 +217,91 @@ class ApiService {
       throw error;
     }
   }
+  static async listReportVersions(surveyName) {
+    if (!surveyName) {
+      throw new Error('Survey name is required');
+    }
+  
+    try {
+      console.log(`Fetching report versions for survey: ${surveyName}`);
+      const response = await fetch(`${API_BASE_URL}/report/versions?surveyName=${encodeURIComponent(surveyName)}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+  
+      if (!response.ok) {
+        let errorDetails = '';
+        try {
+          const errorResponse = await response.text();
+          errorDetails = errorResponse;
+        } catch (e) {
+          errorDetails = 'Unable to get error details';
+        }
+        
+        throw new Error(`HTTP error ${response.status}: ${errorDetails}`);
+      }
+      
+      const data = await response.json();
+      console.log(`Successfully fetched report versions for survey "${surveyName}"`);
+      return data;
+    } catch (error) {
+      console.error(`Error fetching report versions for survey "${surveyName}":`, error);
+      throw error;
+    }
+  }
+  
+  static async getReportVersion(surveyName, reportVersion) {
+    if (!surveyName) {
+      throw new Error('Survey name is required');
+    }
+    
+    if (!reportVersion) {
+      throw new Error('Report version is required');
+    }
+  
+    try {
+      console.log(`Fetching report version ${reportVersion} for survey: ${surveyName}`);
+      const response = await fetch(
+        `${API_BASE_URL}/report/version?surveyName=${encodeURIComponent(surveyName)}&reportVersion=${encodeURIComponent(reportVersion)}`, 
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+  
+      if (response.status === 404) {
+        console.log(`Report version ${reportVersion} not found for survey "${surveyName}"`);
+        return null;
+      }
+  
+      if (!response.ok) {
+        let errorDetails = '';
+        try {
+          const errorResponse = await response.text();
+          errorDetails = errorResponse;
+        } catch (e) {
+          errorDetails = 'Unable to get error details';
+        }
+        
+        throw new Error(`HTTP error ${response.status}: ${errorDetails}`);
+      }
+      
+      const data = await response.json();
+      console.log(`Successfully fetched report version ${reportVersion} for survey "${surveyName}"`);
+      return data;
+    } catch (error) {
+      console.error(`Error fetching report version ${reportVersion} for survey "${surveyName}":`, error);
+      throw error;
+    }
+  }
 }
+
+
+
+
 
 export default ApiService;
