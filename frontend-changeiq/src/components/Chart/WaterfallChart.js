@@ -11,9 +11,20 @@ import {
   ReferenceLine,
   ResponsiveContainer,
   Cell,
-  LabelList
+  LabelList,
 } from 'recharts';
-import { Typography, Box, Paper, useTheme } from '@mui/material';
+import { 
+  Typography, 
+  Box, 
+  Paper, 
+  useTheme,
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableContainer, 
+  TableHead, 
+  TableRow, 
+} from '@mui/material';
 import { categorizeQuestionsForWaterfall, generateWaterfallData, calculateRoiPercentage } from './util';
 import { surveyQuestions } from '../surveyQuestions';
 
@@ -86,14 +97,24 @@ const WaterfallChart = ({ financialData, title = "Cost-Benefit Analysis" }) => {
 
   // Format currency for tooltip and axis
   const formatCurrency = (value) => {
-    if (Math.abs(value) >= 1e6) {
-      return `$${(value / 1e6).toFixed(1)}M`;
-    } else if (Math.abs(value) >= 1e3) {
-      return `$${(value / 1e3).toFixed(0)}K`;
+    // Handle null, undefined, or non-numeric values
+    if (value === null || value === undefined || isNaN(Number(value))) {
+      return '$0';
+    }
+    
+    // Convert to number if it's a string or other convertible type
+    const numValue = Number(value);
+    
+    // Format based on value size
+    if (Math.abs(numValue) >= 1e6) {
+      return `$${(numValue / 1e6).toFixed(1)}M`;
+    } else if (Math.abs(numValue) >= 1e3) {
+      return `$${(numValue / 1e3).toFixed(0)}K`;
     } else {
-      return `$${value.toFixed(0)}`;
+      return `$${numValue.toFixed(0)}`;
     }
   };
+
 
   // Custom tooltip for the waterfall chart
   const CustomTooltip = ({ active, payload }) => {
@@ -186,6 +207,15 @@ const WaterfallChart = ({ financialData, title = "Cost-Benefit Analysis" }) => {
       </Paper>
     );
   }
+// Debug logging (temporary)
+console.log('Chart Data for table:', chartData.map(item => ({
+  name: item.name,
+  value: item.value,
+  total: item.total,
+  runningTotal: item.runningTotal, 
+  // Log all potential properties
+  allProps: Object.keys(item)
+})));
 
   return (
     <Box sx={{ width: '100%', height: 550, mt: 2, mb: 2 }}>
@@ -264,6 +294,52 @@ const WaterfallChart = ({ financialData, title = "Cost-Benefit Analysis" }) => {
             ))}
           </Bar>
         </BarChart>
+              {/* Add data table */}
+      <TableContainer component={Paper} sx={{ mt: 3, mb: 2 }}>
+        <Table size="small" aria-label="financial breakdown table">
+          <TableHead>
+            <TableRow>
+              <TableCell>Category</TableCell>
+              <TableCell align="right">Value</TableCell>
+              <TableCell align="right">Running Total</TableCell>
+              <TableCell>Description</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {chartData.map((row, index) => (
+              <TableRow 
+                key={index}
+                sx={{ 
+                  '&:last-child td, &:last-child th': { border: 0 },
+                  backgroundColor: row.isTotal ? 'rgba(130, 202, 157, 0.1)' : 
+                                 row.isInitial ? 'rgba(136, 132, 216, 0.1)' : 
+                                 'inherit'
+                }}
+              >
+                <TableCell component="th" scope="row">
+                  {row.name}
+                </TableCell>
+                <TableCell align="right" sx={{ 
+                  color: row.value > 0 ? 'success.main' : 
+                          row.value < 0 ? 'error.main' : 
+                          'text.primary',
+                  fontWeight: row.isTotal || row.isInitial ? 'bold' : 'normal'
+                }}>
+                  {formatCurrency(row.value)}
+                  {/* {row.value} */}
+                </TableCell>
+                <TableCell align="right">
+                  {formatCurrency(row.total)}
+                  {/* {row.runningTotal} */}
+                </TableCell>
+                <TableCell>
+                  {row.description || '-'}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
       <Typography variant="body2" align="center" color="text.secondary" sx={{ mt: 1 }}>
         This chart shows the financial impact breakdown of implementing this technology solution
       </Typography>

@@ -330,36 +330,6 @@ const SurveyAnalysisResults = forwardRef(({ analysisData, surveyData }, ref) => 
             />
         </AccordionDetails>
         </Accordion>
-
-      {/* Additional Data - Summary Accordion */}
-      {analysisData.summaryData && (
-        <Accordion 
-          expanded={expandedState.panel4} 
-          onChange={handleAccordionToggle('panel4')}
-          sx={{ 
-            '&.Mui-expanded': {
-              boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)'
-            }
-          }}
-        >
-          <AccordionSummary
-            expandIcon={<ExpandMoreIcon />}
-            aria-controls="panel4-content"
-            id="panel4-header"
-            sx={{ backgroundColor: 'rgba(33, 158, 188, 0.08)' }}
-          >
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <AssessmentIcon sx={{ mr: 1, color: '#219EBC' }} />
-              <Typography variant="h6">Summary</Typography>
-            </Box>
-          </AccordionSummary>
-          <AccordionDetails>
-            <Typography variant="body1">
-              {analysisData.summaryData}
-            </Typography>
-          </AccordionDetails>
-        </Accordion>
-      )}
       
       {/* Add a footer that will only appear in the PDF */}
       <Box 
