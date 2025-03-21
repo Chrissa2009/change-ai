@@ -1,4 +1,3 @@
-// components/SurveyAnalysisResults.jsx
 import React, { useState } from 'react';
 import {
   Box,
@@ -14,7 +13,6 @@ import {
 } from '@mui/material';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
-// import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import LightbulbIcon from '@mui/icons-material/Lightbulb';
 import RecommendIcon from '@mui/icons-material/Recommend';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -53,9 +51,35 @@ const SurveyAnalysisResults = ({ analysisData }) => {
     return `${(value * 100).toFixed(1)}%`;
   };
 
-  // Extract ROI value from the nested object structure
-  const roiValue = analysisData.roi?.value || 0;
+  // Format currency for ROI value if it's a large number
+  const formatCurrency = (value) => {
+    if (value === undefined || value === null) return 'N/A';
+    // If value is very large, format as currency with appropriate abbreviation
+    if (Math.abs(value) >= 1e9) {
+      return `$${(value / 1e9).toFixed(1)}B`;
+    } else if (Math.abs(value) >= 1e6) {
+      return `$${(value / 1e6).toFixed(1)}M`;
+    } else if (Math.abs(value) >= 1e3) {
+      return `$${(value / 1e3).toFixed(1)}K`;
+    } else {
+      return `$${value.toFixed(2)}`;
+    }
+  };
 
+  // Extract data from the new nested structure
+  const responseData = analysisData?.analysisData?.response || {};
+  
+  // Get ROI value
+  const roiValue = responseData.roi?.value || 0;
+  const roiExplanation = responseData.roi?.explanation || '';
+  
+  // Get insights and recommendations arrays
+  const insights = responseData.insights || [];
+  const recommendations = responseData.recommendations || [];
+
+  // Check if ROI is a percentage or a raw value
+  const isRoiPercentage = roiValue >= -1 && roiValue <= 1;
+  
   return (
     <Box sx={{ mt: 1 }}>
       {/* ROI Summary Accordion */}
@@ -88,40 +112,28 @@ const SurveyAnalysisResults = ({ analysisData }) => {
                   ROI
                 </Typography>
                 <Typography 
-                    variant="h4" 
-                    sx={{ 
-                        color: (() => {
-                        // ROI color ranges using Material UI palette or custom hex colors
-                        if (roiValue <= 0.1) return '#FF0000'; // Dark Red - Poor/Negative
-                        if (roiValue <= 0.2) return '#FF4500'; // Red-Orange - Below Average
-                        if (roiValue <= 0.3) return '#FFA500'; // Orange - Fair
-                        if (roiValue <= 0.4) return '#FFD700'; // Yellow-Orange - Moderate
-                        if (roiValue <= 0.5) return '#FFFF00'; // Yellow - Average
-                        if (roiValue <= 0.6) return '#ADFF2F'; // Yellow-Green - Good
-                        if (roiValue <= 0.7) return '#3CB371'; // Light Green - Very Good
-                        if (roiValue <= 0.8) return '#3CB371'; // Medium-Green - Outstanding
-                        if (roiValue <= 0.9) return '#66BB6A'; // Green - Excellent
-                        return '#43A047'; // Deep Green - Exceptional (91-100)
-                        })(),
-                        display: 'flex',
-                        alignItems: 'center',
-                        fontWeight: 'bold'
-                    }}
-                    >
-                    {(roiValue > 0.7) 
-                        ? <TrendingUpIcon sx={{ mr: 1 }} /> 
-                        : <TrendingDownIcon sx={{ mr: 1 }} />}
-                    {formatPercentage(roiValue)}
+                  variant="h4" 
+                  sx={{ 
+                    color: roiValue > 0 ? '#43A047' : '#FF0000',
+                    display: 'flex',
+                    alignItems: 'center',
+                    fontWeight: 'bold'
+                  }}
+                >
+                  {roiValue > 0 
+                    ? <TrendingUpIcon sx={{ mr: 1 }} /> 
+                    : <TrendingDownIcon sx={{ mr: 1 }} />}
+                  {isRoiPercentage ? formatPercentage(roiValue) : formatCurrency(roiValue)}
                 </Typography>
               </Box>
               
-              {analysisData.roi?.explanation && (
+              {roiExplanation && (
                 <Box sx={{ mt: 2 }}>
                   <Typography variant="subtitle2" color="text.secondary">
                     Explanation
                   </Typography>
                   <Typography variant="body1">
-                    {analysisData.roi.explanation}
+                    {roiExplanation}
                   </Typography>
                 </Box>
               )}
@@ -131,7 +143,7 @@ const SurveyAnalysisResults = ({ analysisData }) => {
       </Accordion>
       
       {/* Insights Accordion */}
-      {analysisData.insights && analysisData.insights.length > 0 && (
+      {insights.length > 0 && (
         <Accordion 
           expanded={expandedState.panel2} 
           onChange={handleAccordionToggle('panel2')}
@@ -155,13 +167,13 @@ const SurveyAnalysisResults = ({ analysisData }) => {
           </AccordionSummary>
           <AccordionDetails>
             <Grid container spacing={2}>
-              {analysisData.insights.map((insight, index) => (
+              {insights.map((insight, index) => (
                 <Grid item xs={12} key={`insight-${index}`}>
                   <Card 
                     elevation={1}   
                     sx={{ 
-                        border: 'none',
-                        boxShadow: 'none'
+                      border: 'none',
+                      boxShadow: 'none'
                     }}>
                     <CardHeader 
                       title={insight.title}
@@ -181,7 +193,7 @@ const SurveyAnalysisResults = ({ analysisData }) => {
       )}
       
       {/* Recommendations Accordion */}
-      {analysisData.recommendations && analysisData.recommendations.length > 0 && (
+      {recommendations.length > 0 && (
         <Accordion 
           expanded={expandedState.panel3} 
           onChange={handleAccordionToggle('panel3')}
@@ -205,24 +217,24 @@ const SurveyAnalysisResults = ({ analysisData }) => {
           </AccordionSummary>
           <AccordionDetails>
             <Grid container spacing={2}>
-              {analysisData.recommendations.map((recommendation, index) => (
+              {recommendations.map((recommendation, index) => (
                 <Grid item xs={12} key={`recommendation-${index}`}>
-                    <Card 
-                        elevation={1}   
-                        sx={{ 
-                            border: 'none',
-                            boxShadow: 'none'
-                        }}>
-                        <CardHeader 
-                        title={recommendation.title}
-                        subheader={recommendation.description}
-                        />
-                        <CardContent>
-                        <Typography variant="body1">
-                            {recommendation.contents}
-                        </Typography>
-                        </CardContent>
-                    </Card>
+                  <Card 
+                    elevation={1}   
+                    sx={{ 
+                      border: 'none',
+                      boxShadow: 'none'
+                    }}>
+                    <CardHeader 
+                      title={recommendation.title}
+                      subheader={recommendation.description}
+                    />
+                    <CardContent>
+                      <Typography variant="body1">
+                        {recommendation.contents}
+                      </Typography>
+                    </CardContent>
+                  </Card>
                 </Grid>
               ))}
             </Grid>
@@ -230,56 +242,35 @@ const SurveyAnalysisResults = ({ analysisData }) => {
         </Accordion>
       )}
       
-      {/* Additional Data Accordion */}
-      {Object.entries(analysisData)
-        .filter(([key]) => !['roi', 'insights', 'recommendations', 'surveyName'].includes(key))
-        .length > 0 && (
-          <Accordion 
-            expanded={expandedState.panel4} 
-            onChange={handleAccordionToggle('panel4')}
-            sx={{ 
-              '&.Mui-expanded': {
-                boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)'
-              }
-            }}
+      {/* Additional Data - Summary Accordion */}
+      {analysisData.summaryData && (
+        <Accordion 
+          expanded={expandedState.panel4} 
+          onChange={handleAccordionToggle('panel4')}
+          sx={{ 
+            '&.Mui-expanded': {
+              boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)'
+            }
+          }}
+        >
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon />}
+            aria-controls="panel4-content"
+            id="panel4-header"
+            sx={{ backgroundColor: 'rgba(33, 158, 188, 0.08)' }}
           >
-            <AccordionSummary
-              expandIcon={<ExpandMoreIcon />}
-              aria-controls="panel4-content"
-              id="panel4-header"
-              sx={{ backgroundColor: 'rgba(33, 158, 188, 0.08)' }}
-            >
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <AssessmentIcon sx={{ mr: 1, color: '#219EBC' }} />
-                <Typography variant="h6">Additional Details</Typography>
-              </Box>
-            </AccordionSummary>
-            <AccordionDetails>
-              <Grid container spacing={2}>
-                {Object.entries(analysisData)
-                  .filter(([key]) => !['roi', 'insights', 'recommendations', 'surveyName'].includes(key))
-                  .map(([key, value]) => {
-                    // Only render primitive values or simple objects
-                    if (typeof value !== 'object' || value === null) {
-                      return (
-                        <Grid item xs={12} key={key}>
-                          <Box sx={{ mb: 2 }}>
-                            <Typography variant="subtitle2" color="text.secondary">
-                              {key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ')}
-                            </Typography>
-                            <Typography variant="body1">
-                              {value}
-                            </Typography>
-                          </Box>
-                        </Grid>
-                      );
-                    }
-                    return null;
-                  })}
-              </Grid>
-            </AccordionDetails>
-          </Accordion>
-        )}
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <AssessmentIcon sx={{ mr: 1, color: '#219EBC' }} />
+              <Typography variant="h6">Summary</Typography>
+            </Box>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Typography variant="body1">
+              {analysisData.summaryData}
+            </Typography>
+          </AccordionDetails>
+        </Accordion>
+      )}
     </Box>
   );
 };

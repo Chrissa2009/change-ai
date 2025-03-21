@@ -41,11 +41,13 @@ import DeleteConfirmationDialog from './components/DeleteConfirmationDialog';
 import Footer from './components/Footer';
 import InsightsIcon from '@mui/icons-material/Insights';
 import CalculateIcon from '@mui/icons-material/Calculate';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import CloseIcon from '@mui/icons-material/Close';
 import '@fontsource/space-grotesk';
 import ApiService from './api';
 import SurveyAnalysisResults from './components/SurveyAnalysisResults';
 import QueryStatsIcon from '@mui/icons-material/QueryStats';
+import { surveyQuestions } from './components/surveyQuestions';
 
 const theme = createTheme({
   components: {
@@ -77,7 +79,6 @@ function App() {
   const [apiError, setApiError] = useState(null);
   const [surveyAnalysis, setSurveyAnalysis] = useState(null);
   const [analysisDialogOpen, setAnalysisDialogOpen] = useState(false);
-
   const appTheme = useTheme();
   const isMobile = useMediaQuery(appTheme.breakpoints.down('md'));
 
@@ -291,7 +292,48 @@ function App() {
     }
   };
   
-  const getSurveyAnalysis = async (surveyName) => {
+  const transformResponsesToApiFormat = (responses) => {
+    // Initialize the output object with forms array
+    const transformedData = {
+      forms: []
+    };
+    
+    // Iterate through all responses
+    Object.entries(responses).forEach(([questionId, answer]) => {
+      // Skip empty answers
+      if (answer === undefined || answer === null || answer === '') {
+        return;
+      }
+      
+      // Find the question definition to get category, title and description
+      let questionData = null;
+      let category = '';
+      
+      // Search for the question in survey questions
+      for (const section of surveyQuestions) {
+        const question = section.questions.find(q => q.id === questionId);
+        if (question) {
+          questionData = question;
+          category = section.section;
+          break;
+        }
+      }
+      
+      // If question found, add to forms
+      if (questionData) {
+        transformedData.forms.push({
+          category: category,
+          title: questionId,
+          description: questionData.label,
+          contents: String(answer) // Ensure contents is always a string
+        });
+      }
+    });
+    
+    return transformedData;
+  };
+
+  const getSurveyAnalysis = async (surveyName, responses) => {
     if (!surveyName) {
       setSnackbar({
         open: true,
@@ -305,9 +347,11 @@ function App() {
     setSurveyAnalysis(null);
     
     try {
-      const analysisData = await ApiService.getSurveyAnalysis(surveyName);
+      const transformedData = transformResponsesToApiFormat(responses);
+      console.log('Analysis response sent:', transformedData);
+      const analysisData = await ApiService.fetchSurveyAnalysis(surveyName, transformedData);
       
-      console.log('Analysis data received:', analysisData);
+      // console.log('Analysis data received:', analysisData);
       
       if (!analysisData || Object.keys(analysisData).length === 0) {
         throw new Error('Analysis returned empty results');
@@ -320,6 +364,9 @@ function App() {
       });
       
       setSurveyAnalysis(analysisData);
+      console.log('setSurveyAnalysis(analysisData):', surveyAnalysis);
+
+    
   
     } catch (error) {
       console.error('Error getting survey analysis:', error);
@@ -688,7 +735,7 @@ function App() {
                           color="primary"
                           startIcon={<QueryStatsIcon />}
                           onClick={() => {
-                            getSurveyAnalysis(currentSurvey.name);
+                            getSurveyAnalysis(currentSurvey.name, currentResponses);
                             setAnalysisDialogOpen(true);
                           }}
                           disabled={isLoadingAnalysis}
@@ -729,11 +776,18 @@ function App() {
                         ) : surveyAnalysis ? (
                           <SurveyAnalysisResults analysisData={surveyAnalysis} />
                         ) : (
-                          <Typography>No analysis data available yet.</Typography>
+                          <Typography>No analysis data found.</Typography>
                         )}
                       </DialogContent>
                       <DialogActions>
-                        <Button onClick={() => setAnalysisDialogOpen(false)}>Download Report</Button>
+                        <Button 
+                          onClick={() => setAnalysisDialogOpen(false)} 
+                          disabled={!surveyAnalysis} 
+                          variant='outlined'
+                          endIcon={<FileDownloadIcon />}
+                        >
+                          Download Report
+                        </Button>
                       </DialogActions>
                     </Dialog>
                   </Box>
