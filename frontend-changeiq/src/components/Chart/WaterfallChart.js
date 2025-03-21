@@ -25,7 +25,7 @@ import {
   TableHead, 
   TableRow, 
 } from '@mui/material';
-import { categorizeQuestionsForWaterfall, generateWaterfallData, calculateRoiPercentage } from './util';
+import { categorizeQuestionsForWaterfall, generateWaterfallData, calculateRoiPercentage, formatCurrency } from './util';
 import { surveyQuestions } from '../surveyQuestions';
 
 const WaterfallChart = ({ financialData, title = "Cost-Benefit Analysis" }) => {
@@ -56,9 +56,10 @@ const WaterfallChart = ({ financialData, title = "Cost-Benefit Analysis" }) => {
         return {
           name: 'Initial\nBudget',
           fill: theme.palette.info.light,
-          value: 0, // No value for starting point in waterfall
+          value: item.value,
           displayValue: item.value,
           total: runningTotal,
+          description: item.description || "Starting Budget",
           step: "start"
         };
       }
@@ -67,10 +68,11 @@ const WaterfallChart = ({ financialData, title = "Cost-Benefit Analysis" }) => {
       if (index === waterfallData.length - 1 && item.isTotal) {
         return {
           name: 'Net\nImpact',
-          fill: item.value >= 0 ? theme.palette.success.main : theme.palette.error.main,
-          value: 0, // No value for end point in waterfall
+          fill: runningTotal >= 0 ? theme.palette.success.main : theme.palette.error.main,
+          value: runningTotal,
           displayValue: item.value,
           total: runningTotal,
+          description: item.description || `Overall impact: ${runningTotal >= 0 ? "Positive" : "Negative"} change of ${formatCurrency(Math.abs(runningTotal))}`,
           step: "result"
         };
       }
@@ -83,6 +85,7 @@ const WaterfallChart = ({ financialData, title = "Cost-Benefit Analysis" }) => {
         name: item.name.replace(' ', '\n'), // Add line breaks for better display
         fill: itemValue >= 0 ? theme.palette.success.light : theme.palette.error.light,
         value: itemValue,
+        displayValue: itemValue, // Adding for consistency
         description: item.description,
         total: runningTotal,
         step: itemValue >= 0 ? "benefit" : "cost"
@@ -95,25 +98,6 @@ const WaterfallChart = ({ financialData, title = "Cost-Benefit Analysis" }) => {
     };
   }, [financialData, surveyQuestions, theme]);
 
-  // Format currency for tooltip and axis
-  const formatCurrency = (value) => {
-    // Handle null, undefined, or non-numeric values
-    if (value === null || value === undefined || isNaN(Number(value))) {
-      return '$0';
-    }
-    
-    // Convert to number if it's a string or other convertible type
-    const numValue = Number(value);
-    
-    // Format based on value size
-    if (Math.abs(numValue) >= 1e6) {
-      return `$${(numValue / 1e6).toFixed(1)}M`;
-    } else if (Math.abs(numValue) >= 1e3) {
-      return `$${(numValue / 1e3).toFixed(0)}K`;
-    } else {
-      return `$${numValue.toFixed(0)}`;
-    }
-  };
 
 
   // Custom tooltip for the waterfall chart
@@ -175,7 +159,7 @@ const WaterfallChart = ({ financialData, title = "Cost-Benefit Analysis" }) => {
     if (value === 0 || Math.abs(value) < 100) return null;
     
     // Position the label based on whether the value is positive or negative
-    const labelY = value >= 0 ? y - 10 : y + height + 15;
+    const labelY = value >= 0 ? y - 10 : y + 10;
     
     return (
       <g>
@@ -207,6 +191,15 @@ const WaterfallChart = ({ financialData, title = "Cost-Benefit Analysis" }) => {
       </Paper>
     );
   }
+  // Debug logging
+  // console.log('Chart Data for table:', chartData.map(item => ({
+  //   name: item.name,
+  //   value: item.value,
+  //   total: item.total,
+  //   runningTotal: item.runningTotal, 
+  //   // Log all potential properties
+  //   allProps: Object.keys(item)
+  // })));
 
   return (
     <Box sx={{ width: '100%', mt: 2, mb: 2 }}>
