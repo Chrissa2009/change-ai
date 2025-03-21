@@ -100,7 +100,6 @@ export const categorizeQuestionsForWaterfall = (surveyQuestions) => {
    */
   export const generateWaterfallData = (responses, categorizedQuestions) => {
     const waterfallData = [];
-    
     // Starting point - total budget
     if (responses.total_budget) {
       waterfallData.push({
@@ -244,3 +243,23 @@ export const categorizeQuestionsForWaterfall = (surveyQuestions) => {
    * // Calculate ROI percentage
    * const roiPercentage = calculateRoiPercentage(waterfallData);
    */
+
+// Format currency for tooltip and axis
+export const formatCurrency = (value) => {
+  // Handle null, undefined, or non-numeric values
+  if (value === null || value === undefined || isNaN(Number(value))) {
+    return '$0';
+  }
+  
+  // Convert to number if it's a string or other convertible type
+  const numValue = Number(value);
+  
+  // Format based on value size
+  if (Math.abs(numValue) >= 1e6) {
+    return `$${(numValue / 1e6).toFixed(1)}M`;
+  } else if (Math.abs(numValue) >= 1e3) {
+    return `$${(numValue / 1e3).toFixed(0)}K`;
+  } else {
+    return `$${numValue.toFixed(0)}`;
+  }
+};
