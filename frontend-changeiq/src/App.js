@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Box, 
   Typography, 
@@ -31,6 +31,7 @@ import {
 import MenuIcon from '@mui/icons-material/Menu';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import DescriptionIcon from '@mui/icons-material/Description';
+import PrivacyTipIcon from '@mui/icons-material/PrivacyTip';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditNoteIcon from '@mui/icons-material/EditNote';
 import EditIcon from '@mui/icons-material/Edit';
@@ -48,6 +49,7 @@ import ApiService from './api';
 import SurveyAnalysisResults from './components/SurveyAnalysisResults';
 import QueryStatsIcon from '@mui/icons-material/QueryStats';
 import { surveyQuestions } from './components/surveyQuestions';
+import { generatePDFWithHtml2Pdf } from './components/pdfUtils';
 
 const theme = createTheme({
   components: {
@@ -79,8 +81,12 @@ function App() {
   const [apiError, setApiError] = useState(null);
   const [surveyAnalysis, setSurveyAnalysis] = useState(null);
   const [analysisDialogOpen, setAnalysisDialogOpen] = useState(false);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+
   const appTheme = useTheme();
   const isMobile = useMediaQuery(appTheme.breakpoints.down('md'));
+  // Create a ref to the SurveyAnalysisResults component
+  const surveyResultsRef = useRef(null);
 
   useEffect(() => {
     const fetchSurveys = async () => {
@@ -291,7 +297,24 @@ function App() {
       setIsLoading(false);
     }
   };
-  
+
+    // Handle PDF download
+    const handlePdfDownload = async () => {
+      if (!surveyAnalysis) return;
+      
+      setIsGeneratingPDF(true);
+      
+      try {
+        await generatePDFWithHtml2Pdf(surveyResultsRef);
+        // You could show a success message here
+      } catch (error) {
+        console.error('Failed to generate PDF:', error);
+        // You could show an error message here
+      } finally {
+        setIsGeneratingPDF(false);
+      }
+    };
+
   const transformResponsesToApiFormat = (responses) => {
     // Initialize the output object with forms array
     const transformedData = {
@@ -348,7 +371,7 @@ function App() {
     
     try {
       const transformedData = transformResponsesToApiFormat(responses);
-      console.log('Analysis response sent:', transformedData);
+      // console.log('Analysis response sent:', transformedData);
       const analysisData = await ApiService.fetchSurveyAnalysis(surveyName, transformedData);
       
       // console.log('Analysis data received:', analysisData);
@@ -364,9 +387,7 @@ function App() {
       });
       
       setSurveyAnalysis(analysisData);
-      console.log('setSurveyAnalysis(analysisData):', surveyAnalysis);
-
-    
+      // console.log('setSurveyAnalysis(analysisData):', surveyAnalysis);
   
     } catch (error) {
       console.error('Error getting survey analysis:', error);
@@ -379,7 +400,9 @@ function App() {
       setIsLoadingAnalysis(false);
     }
   };
-
+useEffect(() => {
+  console.log('islodingAnalysis:', isLoadingAnalysis);
+}, [isLoadingAnalysis]);
   const handleDuplicateSurvey = async (survey) => {
     setIsLoading(true);
     try {
@@ -534,6 +557,18 @@ function App() {
                     arrow
                     placement="top"
                     enterDelay={500}
+                    slotProps={{
+                      tooltip: {
+                        sx: {
+                          backgroundColor: '#3b3b3b',
+                        },
+                      },
+                      arrow: {
+                        sx: {
+                          color: '#3b3b3b',
+                        },
+                      },
+                    }}
                   >
                     <ListItemText 
                       primary={survey.name} 
@@ -759,7 +794,7 @@ function App() {
                       aria-labelledby="analysis-dialog-title"
                     >
                       <DialogTitle id="analysis-dialog-title">
-                        RESULTS
+                        ANALYSIS RESULTS
                         <IconButton
                           aria-label="close"
                           onClick={() => setAnalysisDialogOpen(false)}
@@ -770,23 +805,69 @@ function App() {
                       </DialogTitle>
                       <DialogContent dividers>
                         {isLoadingAnalysis ? (
-                          <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
-                            <LinearProgress color="success" />
+                          <Box sx={{ width: '100%', mt: 2, mb: 2 }}>
+                            <LinearProgress color='success'/>
                           </Box>
                         ) : surveyAnalysis ? (
-                          <SurveyAnalysisResults analysisData={surveyAnalysis} />
+                          <SurveyAnalysisResults 
+                            analysisData={surveyAnalysis}             
+                            ref={surveyResultsRef} 
+                          />
                         ) : (
                           <Typography>No analysis data found.</Typography>
                         )}
                       </DialogContent>
-                      <DialogActions>
-                        <Button 
-                          onClick={() => setAnalysisDialogOpen(false)} 
-                          disabled={!surveyAnalysis} 
-                          variant='outlined'
-                          endIcon={<FileDownloadIcon />}
+                      <DialogActions sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Tooltip 
+                          title={
+                            <Box>
+                              <Typography variant="subtitle2">The ROI insights generated by this tool are automated and may require human review for accuracy and applicability. 
+                                We recommend verifying results with a qualified expert before making any business decisions.</Typography>
+                            </Box>
+                          }
+                          arrow
+                          placement="top"
+                          slotProps={{
+                            tooltip: {
+                              sx: {
+                                backgroundColor: '#3b3b3b',
+                              },
+                            },
+                            arrow: {
+                              sx: {
+                                color: '#3b3b3b',
+                              },
+                            },
+                          }}
                         >
-                          Download Report
+                          <Typography
+                              variant="body2"
+                              sx={{
+                                border: '1px solid',
+                                borderColor: '#f57c00',
+                                borderRadius: '4px',
+                                padding: '6px 12px',
+                                cursor: 'pointer',
+                                color: '#f57c00',
+                                gap: 1,
+                                display: 'flex',
+                                alignItems: 'center',
+                              }}
+                              >
+                              <PrivacyTipIcon fontSize="small"/>
+                              DISCLAIMER
+                          </Typography>
+                        </Tooltip>
+                        <Button 
+                          onClick={handlePdfDownload} 
+                          disabled={!surveyAnalysis || isGeneratingPDF} 
+                          variant='outlined'
+                          endIcon={isGeneratingPDF ?
+                            <CircularProgress size={20} color="inherit" /> : 
+                            <FileDownloadIcon />
+                          }
+                        >
+                          {isGeneratingPDF ? 'Generating PDF...' : 'Download PDF Report'}
                         </Button>
                       </DialogActions>
                     </Dialog>

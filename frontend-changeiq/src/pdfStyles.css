@@ -1,0 +1,51 @@
+/* pdfStyles.css */
+@media print {
+    /* Custom styles for PDF output */
+    body {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    
+    /* Page break control */
+    .MuiAccordion-root {
+      page-break-inside: avoid !important;
+    }
+    
+    .MuiCardContent-root {
+      page-break-inside: avoid !important;
+    }
+    
+    /* Ensure headers don't get cut off */
+    h1, h2, h3, h4, h5, h6 {
+      page-break-after: avoid !important;
+    }
+    
+    /* Better text flow */
+    p, span, div {
+      max-width: 100% !important;
+      word-break: break-word !important;
+      overflow-wrap: break-word !important;
+      white-space: normal !important;
+    }
+    
+    /* Prevent card overflow */
+    .MuiCard-root {
+      break-inside: avoid !important;
+      max-width: 100% !important;
+      box-sizing: border-box !important;
+    }
+    
+    /* Ensure accordions expand properly */
+    .MuiAccordionDetails-root {
+      display: block !important;
+      overflow: visible !important;
+      height: auto !important;
+    }
+  }
+  
+  /* Additional class for critical content that shouldn't be split */
+  .no-break {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+  
