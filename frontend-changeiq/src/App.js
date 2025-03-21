@@ -49,7 +49,7 @@ import ApiService from './api';
 import SurveyAnalysisResults from './components/SurveyAnalysisResults';
 import QueryStatsIcon from '@mui/icons-material/QueryStats';
 import { surveyQuestions } from './components/surveyQuestions';
-import { generatePDF } from './components/pdfUtils';
+import { generatePDFWithHtml2Pdf } from './components/pdfUtils';
 
 const theme = createTheme({
   components: {
@@ -297,7 +297,7 @@ function App() {
       setIsLoading(false);
     }
   };
-  
+
     // Handle PDF download
     const handlePdfDownload = async () => {
       if (!surveyAnalysis) return;
@@ -305,7 +305,7 @@ function App() {
       setIsGeneratingPDF(true);
       
       try {
-        await generatePDF(surveyResultsRef);
+        await generatePDFWithHtml2Pdf(surveyResultsRef);
         // You could show a success message here
       } catch (error) {
         console.error('Failed to generate PDF:', error);
@@ -844,11 +844,11 @@ useEffect(() => {
                               variant="body2"
                               sx={{
                                 border: '1px solid',
-                                borderColor: 'primary.main',
+                                borderColor: '#f57c00',
                                 borderRadius: '4px',
                                 padding: '6px 12px',
                                 cursor: 'pointer',
-                                color: 'primary.main',
+                                color: '#f57c00',
                                 gap: 1,
                                 display: 'flex',
                                 alignItems: 'center',
