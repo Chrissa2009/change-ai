@@ -7,7 +7,6 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ReferenceLine,
   ResponsiveContainer,
   Cell,
@@ -96,7 +95,7 @@ const WaterfallChart = ({ financialData, title = "Cost-Benefit Analysis" }) => {
       chartData: formattedData,
       roiPercentage: roiPercentage
     };
-  }, [financialData, surveyQuestions, theme]);
+  }, [financialData, theme]);
 
 
 
@@ -152,7 +151,7 @@ const WaterfallChart = ({ financialData, title = "Cost-Benefit Analysis" }) => {
 
   // Custom value label formatting
   const CustomizedLabel = (props) => {
-    const { x, y, width, height, value, index } = props;
+    const { x, y, width, value } = props;
     // const item = chartData[index]; 
     
     // Don't render for zero values
