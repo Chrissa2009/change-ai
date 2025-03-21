@@ -50,6 +50,7 @@ import SurveyAnalysisResults from './components/SurveyAnalysisResults';
 import QueryStatsIcon from '@mui/icons-material/QueryStats';
 import { surveyQuestions } from './components/surveyQuestions';
 import { generatePDFWithHtml2Pdf } from './components/pdfUtils';
+import { downloadFile } from './components/fileUtils';
 
 const theme = createTheme({
   components: {
@@ -858,17 +859,27 @@ useEffect(() => {
                               DISCLAIMER
                           </Typography>
                         </Tooltip>
-                        <Button 
-                          onClick={handlePdfDownload} 
-                          disabled={!surveyAnalysis || isGeneratingPDF} 
-                          variant='outlined'
-                          endIcon={isGeneratingPDF ?
-                            <CircularProgress size={20} color="inherit" /> : 
-                            <FileDownloadIcon />
-                          }
-                        >
-                          {isGeneratingPDF ? 'Generating PDF...' : 'Download PDF Report'}
-                        </Button>
+                        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap',  }}>
+                          <Button
+                            onClick={() => downloadFile(surveyAnalysis.analysisLink)}
+                            disabled={isLoadingAnalysis} 
+                            variant='outlined'
+                            endIcon={<FileDownloadIcon />}
+                          >
+                            Download JSON Audit Trail
+                          </Button>
+                          <Button 
+                            onClick={handlePdfDownload} 
+                            disabled={!surveyAnalysis || isGeneratingPDF} 
+                            variant='outlined'
+                            endIcon={isGeneratingPDF ?
+                              <CircularProgress size={20} color="inherit" /> : 
+                              <FileDownloadIcon />
+                            }
+                          >
+                            {isGeneratingPDF ? 'Generating PDF...' : 'Download PDF Report'}
+                          </Button>
+                        </Box>
                       </DialogActions>
                     </Dialog>
                   </Box>

@@ -209,6 +209,7 @@ class ApiService {
         return { 
           analysisData, 
           summaryData,
+          analysisLink: responseData.analysis,
         };
       }
     } catch (error) {
