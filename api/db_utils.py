@@ -4,7 +4,9 @@ from azure.identity import DefaultAzureCredential
 from retry import exponential_backoff
 
 REPORTS_CONTAINER_NAME = "reports"
-SURVEY_CONTAINER_NAME = "surveys"
+SURVEY_CONTAINER_NAME = "surveysV2"
+SURVEY_PARTITION_KEY = "surveyPartition"
+SURVEY_PARTITION_VALUE = "survey"
 ID_KEY = "id"
 REPORT_VERSION_KEY = "reportVersion"
 REPORT_PARTITION_KEY = "surveyName"
@@ -27,14 +29,14 @@ def get_client():
 @exponential_backoff(initial_delay=1, retries=3)
 def list_surveys(client):
     container = _get_container_client(client, SURVEY_CONTAINER_NAME)
-    results = container.query_items(query=SURVEY_QUERY, enable_cross_partition_query=True)
+    results = container.query_items(query=SURVEY_QUERY, partition_key=SURVEY_PARTITION_VALUE, enable_cross_partition_query=False)
     return [d[ID_KEY] for d in results]
 
 @exponential_backoff(initial_delay=1, retries=3)
 def get_survey(client, name):
     container = _get_container_client(client, SURVEY_CONTAINER_NAME)
     try:
-        return container.read_item(item=name, partition_key=name)[DATA_KEY]
+        return container.read_item(item=name, partition_key=SURVEY_PARTITION_VALUE)[DATA_KEY]
     except CosmosResourceNotFoundError:
         return None
 
@@ -43,6 +45,7 @@ def put_survey(client, name, content):
     record = {}
     record[ID_KEY] = name
     record[DATA_KEY] = content
+    record[SURVEY_PARTITION_KEY] = SURVEY_PARTITION_VALUE
     container = _get_container_client(client, SURVEY_CONTAINER_NAME)
     container.upsert_item(body=record)
 
