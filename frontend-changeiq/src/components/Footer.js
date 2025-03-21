@@ -4,7 +4,7 @@ import LinkedInIcon from '@mui/icons-material/LinkedIn';
 
 const Footer = ({ 
   companyName = "Change.AI - Microsoft Innovation Challenge March 2025",
-  founders = ["Chrissa De Gomez", "Bryan Yue", "Raylan Liang"],
+  founders = ["Chrissa da Gomez", "Bryan Yue", "Raylan Liang"],
   logo = null, 
   linkedinLinks = {
     chrissa: "https://www.linkedin.com/in/chrissadagomez/", 
@@ -16,7 +16,7 @@ const Footer = ({
   const linkedinColor = "#0077b5";
 
   const founderLinks = {
-    "Chrissa De Gomez": linkedinLinks.chrissa,
+    "Chrissa da Gomez": linkedinLinks.chrissa,
     "Bryan Yue": linkedinLinks.bryan,
     "Raylan Liang": linkedinLinks.raylan
   };
