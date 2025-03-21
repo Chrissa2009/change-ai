@@ -150,16 +150,29 @@ class ApiService {
   }
   
   // Get analysis for a survey
-  static async getSurveyAnalysis(surveyName) {
+  static async fetchSurveyAnalysis(surveyName, responses) {
     if (!surveyName) {
       throw new Error('Survey name is required');
+    }  
+    if (!responses) {
+      throw new Error('Survey responses are required');
     }
 
     try {
-      console.log(`Fetching analysis for survey: ${surveyName}`);
-      const url = `${API_BASE_URL}/survey/analysis?surveyName=${encodeURIComponent(surveyName)}`;
+      const url = `${API_BASE_URL}/survey/analysis`;
       
-      const response = await fetch(url);
+      // For a GET request with a body, we need to use the fetch API with specific settings
+      if (responses) {
+        const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        // The body that matches the expected format
+        body: JSON.stringify(responses)
+
+      });
       
       if (response.status === 404) {
         console.log(`Survey "${surveyName}" not found for analysis`);
@@ -178,9 +191,26 @@ class ApiService {
         throw new Error(`HTTP error ${response.status}: ${errorDetails}`);
       }
       
-      const data = await response.json();
-      console.log(`Successfully retrieved analysis for "${surveyName}"`);
-      return data;
+        // Parse the response body ONCE
+        const responseData = await response.json();
+        
+        // Fetch the summary text file
+        const summaryResponse = await fetch(responseData.summary);
+        const summaryData = await summaryResponse.text();
+        
+        // Fetch the analysis JSON file
+        const analysisResponse = await fetch(responseData.analysis);
+        const analysisData = await analysisResponse.json();
+        
+        console.log("summaryData:", summaryData);
+        console.log("analysisData:", analysisData);
+      
+        // Return both pieces of data as an object
+        return { 
+          analysisData, 
+          summaryData,
+        };
+      }
     } catch (error) {
       console.error(`Error fetching analysis for survey "${surveyName}":`, error);
       throw error;
