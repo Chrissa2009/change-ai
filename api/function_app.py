@@ -9,6 +9,7 @@ import analysis_schema
 import system_message
 import keyvault_utils
 import blob_utils
+from datetime import datetime, timezone
 
 app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
 
@@ -148,8 +149,17 @@ def delete_survey(req: func.HttpRequest) -> func.HttpResponse:
 @app.function_name(name="PostSurveyAnalysis")
 @app.route(route="survey/analysis", methods=["POST"])
 def post_survey_analysis(req: func.HttpRequest) -> func.HttpResponse:
-    system_prompt = req.params.get('persona') if req.params.get('persona') else system_message.ROI_EXPERT_SYSTEM_MESSAGE
+    system_prompt = system_message.ROI_EXPERT_SYSTEM_MESSAGE
     request_body = None
+    survey_name = req.params.get('surveyName')
+    if not survey_name:
+        response_body = {"error": "Malformed request, missing surveyName request parameter."}
+        logging.error(f"POST survey analysis error: {response_body}")
+        return func.HttpResponse(
+            json.dumps(response_body),
+            mimetype='application/json',
+            status_code=400
+        )
     try:
         request_body = req.get_json()
     except ValueError as e:
@@ -222,11 +232,19 @@ def post_survey_analysis(req: func.HttpRequest) -> func.HttpResponse:
             content_type="text/plain",
             data=summary
         )
+        report_version = datetime.now(timezone.utc).isoformat()
         response = {
+            "surveyName": survey_name
+            "reportVersion": report_version,
             "summary": summary_url,
             "analysis": analysis_url,
-            "personaOverride": req.params.get('persona') is not None
         }
+        db_utils.put_report_version(
+            client=db_utils.get_client(),
+            surveyName=survey_name,
+            reportVersion=report_version,
+            content=response
+        )
         logging.info(f"POST survey analysis response: {response}")
         return func.HttpResponse(
             json.dumps(response),
@@ -235,6 +253,88 @@ def post_survey_analysis(req: func.HttpRequest) -> func.HttpResponse:
         )
     except Exception as e:
         logging.error(f"POST survey analysis error: {e}")
+        return func.HttpResponse(
+            json.dumps({"error": repr(e)}),
+            mimetype='application/json',
+            status_code=500
+        )
+
+@app.function_name(name="ListReportVersions")
+@app.route(route="report/versions", methods=["GET"])
+def get_report_versions(req: func.HttpRequest) -> func.HttpResponse:
+    survey_name = req.params.get('surveyName')
+    if not survey_name:
+        response_body = {"error": "Malformed request, missing surveyName request parameter."}
+        logging.error(f"GET report versions error: {response_body}")
+        return func.HttpResponse(
+            json.dumps(response_body),
+            mimetype='application/json',
+            status_code=400
+        )
+    try:
+        report_versions = db_utils.list_report_versions(
+            client=db_utils.get_client(),
+            surveyName=survey_name
+        )
+        response_body = {
+            "surveyName": survey_name,
+            "reportVersions": report_versions
+        }
+        logging.info(f"GET report versions response: {response_body}")
+        return func.HttpResponse(
+            json.dumps(response_body),
+            mimetype='application/json',
+            status_code=200
+        )
+    except Exception as e:
+        logging.error(f"GET report versions error: {e}")
+        return func.HttpResponse(
+            json.dumps({"error": repr(e)}),
+            mimetype='application/json',
+            status_code=500
+        )
+
+@app.function_name(name="GetReportVersion")
+@app.route(route="report/version", methods=["GET"])
+def get_report_version(req: func.HttpRequest) -> func.HttpResponse:
+    survey_name = req.params.get('surveyName')
+    if not survey_name:
+        response_body = {"error": "Malformed request, missing surveyName request parameter."}
+        logging.error(f"GET survey error: {response_body}")
+        return func.HttpResponse(
+            json.dumps(response_body),
+            mimetype='application/json',
+            status_code=400
+        )
+    report_version = req.params.get('reportVersion')
+    if not report_version:
+        response_body = {"error": "Malformed request, missing reportVersion request parameter."}
+        logging.error(f"GET report version error: {response_body}")
+        return func.HttpResponse(
+            json.dumps(response_body),
+            mimetype='application/json',
+            status_code=400
+        )
+    try:
+        report = db_utils.get_report_version(
+            client=db_utils.get_client(),
+            surveyName=survey_name,
+            reportVersion=report_version
+        )
+        if not report:
+            return func.HttpResponse(
+                json.dumps({}),
+                mimetype='application/json',
+                status_code=404
+            )
+        logging.info(f"GET report version response: {report}")
+        return func.HttpResponse(
+            json.dumps(report),
+            mimetype='application/json',
+            status_code=200
+        )
+    except Exception as e:
+        logging.error(f"GET report version error: {e}")
         return func.HttpResponse(
             json.dumps({"error": repr(e)}),
             mimetype='application/json',

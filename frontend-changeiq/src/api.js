@@ -159,7 +159,7 @@ class ApiService {
     }
 
     try {
-      const url = `${API_BASE_URL}/survey/analysis`;
+      const url = `${API_BASE_URL}/survey/analysis?surveyName=${encodeURIComponent(surveyName)}`;
       
       // For a GET request with a body, we need to use the fetch API with specific settings
       if (responses) {
