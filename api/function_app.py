@@ -224,7 +224,8 @@ def post_survey_analysis(req: func.HttpRequest) -> func.HttpResponse:
         )
         response = {
             "summary": summary_url,
-            "analysis": analysis_url
+            "analysis": analysis_url,
+            "personaOverride": req.params.get('persona') is not None
         }
         logging.info(f"POST survey analysis response: {response}")
         return func.HttpResponse(
