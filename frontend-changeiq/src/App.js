@@ -31,6 +31,8 @@ import {
   AccordionSummary, 
   AccordionDetails,
   AccordionActions,
+  Menu,
+  MenuItem
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -576,6 +578,7 @@ useEffect(() => {
             .sort((a, b) => new Date(b.dateModified) - new Date(a.dateModified))
             .map((survey) => (
               <Accordion
+                defaultExpanded
                 key={survey.id}
                 disableGutters
                 sx={{
@@ -669,39 +672,58 @@ useEffect(() => {
                   </Box>
                   
                   <Box sx={{ display: 'flex', gap: 1, justifyContent: 'right', alignContent: 'center' }}>
-                    <Box  >
-                      <Typography 
-                        variant="body2" 
-                        color="text.secondary"
-                        sx={{ fontSize: '0.8rem' }}
-                      >
-                        TEST
-                      </Typography>
-                    </Box>
+                    <Menu
+
+                          >
+                      <MenuItem>
+                        <Typography 
+                          variant="body2" 
+                          color="text.secondary"
+                          sx={{ fontSize: '0.8rem' }}
+                          >
+                          TEST
+                        </Typography>
+                      </MenuItem>
+                    </Menu>
                     <Tooltip title="EDIT" arrow>
-                      <IconButton 
-                        size="small" 
+                      <IconButton
+                        size="small"
                         onClick={() => handleLoadSurvey(survey)}
                         title="Edit survey"
-                        >
+                        sx={{
+                          '&:hover': {
+                            color: 'info.main',
+                          },
+                        }}
+                      >
                         <EditIcon fontSize="small" />
                       </IconButton>
                     </Tooltip>
                     <Tooltip title="DUPLICATE" arrow>
-                      <IconButton 
-                        size="small" 
+                      <IconButton
+                        size="small"
                         onClick={() => handleDuplicateSurvey(survey)}
                         title="Duplicate survey"
-                        >
+                        sx={{
+                          '&:hover': {
+                            color: 'success.main',
+                          },
+                        }}
+                      >
                         <ContentCopyIcon fontSize="small" />
                       </IconButton>
                     </Tooltip>
                     <Tooltip title="DELETE" arrow>
-                      <IconButton 
-                        size="small" 
+                      <IconButton
+                        size="small"
                         onClick={() => handleDeleteSurvey(survey.id)}
                         title="Delete survey"
-                        >
+                        sx={{
+                          '&:hover': {
+                            color: 'error.main',
+                          },
+                        }}
+                      >
                         <DeleteIcon fontSize="small" />
                       </IconButton>
                     </Tooltip>
