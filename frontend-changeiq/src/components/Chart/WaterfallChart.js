@@ -169,7 +169,7 @@ const WaterfallChart = ({ financialData, title = "Cost-Benefit Analysis" }) => {
   // Custom value label formatting
   const CustomizedLabel = (props) => {
     const { x, y, width, height, value, index } = props;
-    const item = chartData[index];
+    // const item = chartData[index]; 
     
     // Don't render for zero values
     if (value === 0 || Math.abs(value) < 100) return null;
@@ -207,15 +207,6 @@ const WaterfallChart = ({ financialData, title = "Cost-Benefit Analysis" }) => {
       </Paper>
     );
   }
-// Debug logging (temporary)
-console.log('Chart Data for table:', chartData.map(item => ({
-  name: item.name,
-  value: item.value,
-  total: item.total,
-  runningTotal: item.runningTotal, 
-  // Log all potential properties
-  allProps: Object.keys(item)
-})));
 
   return (
     <Box sx={{ width: '100%', mt: 2, mb: 2 }}>
@@ -247,7 +238,8 @@ console.log('Chart Data for table:', chartData.map(item => ({
         mb: 4,
         overflow: 'hidden' // Ensure chart stays within container
       }}>
-        <ResponsiveContainer width="100%" height="82%">
+        <ResponsiveContainer width="100%" minHeight={500}>
+        {/* <ResponsiveContainer width="100%" height="100%"> */}
           <BarChart
             data={chartData}
             margin={{ top: 30, right: 30, left: 20, bottom: 80 }}
