@@ -508,6 +508,27 @@ useEffect(() => {
       </Box>
     </Toolbar>     
       <Divider />
+
+      <Box sx={{
+        p: 2,
+        mt: 'auto',
+        position: 'sticky',
+        bottom: 0,
+        backgroundColor: 'background.paper'
+      }}>
+        <Button 
+          variant="contained" 
+          fullWidth 
+          startIcon={<AddCircleIcon />}
+          onClick={startNew}
+          sx={{ backgroundColor: "#219EBC", '&:hover': { backgroundColor: "#1A7A94" } }}
+        >
+          Start New Survey
+        </Button>
+      </Box>
+
+      <Divider />
+
       <Toolbar>
         <Typography variant="h6" noWrap component="div">
           Your Surveys
@@ -526,7 +547,11 @@ useEffect(() => {
           overflowY: 'auto', 
           flex: 1
         }}>
-          {savedSurveys.length === 0 ? (
+          {isLoading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+              <CircularProgress />
+            </Box>
+          ) : savedSurveys.length === 0 ? (
             <ListItem>
               <ListItemText primary="No saved surveys" secondary="Create your first survey to get started" />
             </ListItem>
@@ -611,25 +636,6 @@ useEffect(() => {
           )}
         </List>
       </Box>
-      
-      <Divider />
-      <Box sx={{ 
-        p: 2, 
-        mt: 'auto',
-        position: 'sticky',
-        bottom: 0,
-        backgroundColor: 'background.paper'
-      }}>
-        <Button 
-          variant="contained" 
-          fullWidth 
-          startIcon={<AddCircleIcon />}
-          onClick={startNew}
-          sx={{ backgroundColor: "#219EBC", '&:hover': { backgroundColor: "#1A7A94" } }}
-        >
-          Create New Survey
-        </Button>
-      </Box> 
     </Box>
   );
   
@@ -705,13 +711,7 @@ useEffect(() => {
             mt: '64px',
             backgroundColor: "#fff8f0",
           }}
-        >         
-          {isLoading && (
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-              <CircularProgress />
-            </Box>
-          )}
-          
+        >          
           {apiError && (
             <Alert severity="warning" sx={{ mb: 2 }}>
               {apiError}
