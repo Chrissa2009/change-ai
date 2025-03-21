@@ -399,7 +399,9 @@ function App() {
       setIsLoadingAnalysis(false);
     }
   };
-
+useEffect(() => {
+  console.log('islodingAnalysis:', isLoadingAnalysis);
+}, [isLoadingAnalysis]);
   const handleDuplicateSurvey = async (survey) => {
     setIsLoading(true);
     try {
@@ -790,8 +792,8 @@ function App() {
                       </DialogTitle>
                       <DialogContent dividers>
                         {isLoadingAnalysis ? (
-                          <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
-                            <LinearProgress color="success" />
+                          <Box sx={{ width: '100%', mt: 2, mb: 2 }}>
+                            <LinearProgress color='success'/>
                           </Box>
                         ) : surveyAnalysis ? (
                           <SurveyAnalysisResults 
