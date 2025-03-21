@@ -232,9 +232,9 @@ def post_survey_analysis(req: func.HttpRequest) -> func.HttpResponse:
             content_type="text/plain",
             data=summary
         )
-        report_version = datetime.now(timezone.utc).isoformat()
+        report_version = datetime.now().isoformat()
         response = {
-            "surveyName": survey_name
+            "surveyName": survey_name,
             "reportVersion": report_version,
             "summary": summary_url,
             "analysis": analysis_url,
@@ -315,6 +315,7 @@ def get_report_version(req: func.HttpRequest) -> func.HttpResponse:
             mimetype='application/json',
             status_code=400
         )
+    logging.info(f"report version: {report_version}")
     try:
         report = db_utils.get_report_version(
             client=db_utils.get_client(),

@@ -75,5 +75,6 @@ def put_report_version(client, surveyName, reportVersion, content):
     record[ID_KEY] = _create_report_version_id(surveyName, reportVersion)
     record[DATA_KEY] = content
     record[REPORT_PARTITION_KEY] = surveyName
+    record[REPORT_VERSION_KEY] = reportVersion
     container = _get_container_client(client, REPORTS_CONTAINER_NAME)
     container.upsert_item(body=record)
