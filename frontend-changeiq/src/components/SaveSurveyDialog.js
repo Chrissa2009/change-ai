@@ -6,12 +6,14 @@ import {
   DialogContent,
   DialogActions,
   TextField,
-  Button
+  Button,
+  Tooltip
 } from '@mui/material';
 
-function SaveSurveyDialog({ open, onClose, onSave, initialName = '', isEditing = false }) {
+function SaveSurveyDialog({ open, onClose, onSave, savedSurveys, initialName = '', isEditing = false }) {
   const [surveyName, setSurveyName] = useState('');
   const [error, setError] = useState('');
+  const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -27,6 +29,9 @@ function SaveSurveyDialog({ open, onClose, onSave, initialName = '', isEditing =
     }
     onSave(surveyName.trim());
   };
+
+  const isSaveDisabled = (!isEditing && savedSurveys?.map(s => s.name).includes(surveyName)) ||
+                         (isEditing && initialName !== surveyName && savedSurveys?.map(s => s.name).includes(surveyName));
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
@@ -54,9 +59,20 @@ function SaveSurveyDialog({ open, onClose, onSave, initialName = '', isEditing =
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>
-        <Button variant="contained" onClick={handleSave}>
-          {isEditing ? 'Update' : 'Save'}
-        </Button>
+        <Tooltip 
+          title="Cannot overwrite a different existing survey."
+          open={isHovered && isSaveDisabled}
+        >
+          <Button 
+            variant="contained"
+            onClick={handleSave}
+            disabled={isSaveDisabled}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+          >
+            {isEditing ? 'Update' : 'Save'}
+          </Button>
+        </Tooltip>
       </DialogActions>
     </Dialog>
   );

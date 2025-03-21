@@ -961,6 +961,7 @@ useEffect(() => {
           open={openSaveDialog}
           onClose={() => setOpenSaveDialog(false)}
           onSave={handleSaveSurvey}
+          savedSurveys={savedSurveys}
           initialName={currentSurvey?.name || ''}
           isEditing={!!currentSurvey}
         />
