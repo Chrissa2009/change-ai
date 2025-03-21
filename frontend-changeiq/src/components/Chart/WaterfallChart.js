@@ -270,7 +270,7 @@ console.log('Chart Data for table:', chartData.map(item => ({
               tick={{ fontSize: 12, fill: theme.palette.text.secondary }}
             />
             <Tooltip content={<CustomTooltip />} />
-            <Legend verticalAlign="top" height={36} />
+            {/* <Legend verticalAlign="top" height={36} /> */}
             <ReferenceLine y={0} stroke={theme.palette.divider} strokeWidth={2} />
             <defs>
               <linearGradient id="colorPositive" x1="0" y1="0" x2="0" y2="1">
