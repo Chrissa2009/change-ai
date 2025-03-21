@@ -51,6 +51,7 @@ import InsightsIcon from '@mui/icons-material/Insights';
 import CalculateIcon from '@mui/icons-material/Calculate';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import CloseIcon from '@mui/icons-material/Close';
+import ManageSearchIcon from '@mui/icons-material/ManageSearch';
 import '@fontsource/space-grotesk';
 import ApiService from './api';
 import SurveyAnalysisResults from './components/SurveyAnalysisResults';
@@ -95,7 +96,10 @@ function App() {
   const [menuAnchor, setMenuAnchor] = useState(null);
   const [selectedSurvey, setSelectedSurvey] = useState(null);
   const [versionsLoading, setVersionsLoading] = useState(false);
+  const [selectedReport, setSelectedReport] = useState(null);
 
+
+  console.log('selectedReport:', selectedReport);
   const appTheme = useTheme();
   const isMobile = useMediaQuery(appTheme.breakpoints.down('md'));
   // Create a ref to the SurveyAnalysisResults component
@@ -477,6 +481,25 @@ function App() {
     setSnackbar({ ...snackbar, open: false });
   };
 
+  const handleReportVersionSelectAndDownload = async (surveyName, reportVersion) => {
+    try {
+      setSelectedReport(reportVersion);
+      const reportData = await ApiService.getReportVersion(surveyName, reportVersion);
+      
+      if (reportData?.analysis) {
+        downloadFile(reportData.analysis); // Direct download
+      }
+    } catch (error) {
+      setSnackbar({
+        open: true,
+        message: `Failed to download report: ${error.message}`,
+        severity: 'error'
+      });
+    } finally {
+      setSelectedReport(null);
+    }
+  };
+
   const fetchReportVersions = async (surveyName) => {
     try {
       setVersionsLoading(true);
@@ -704,7 +727,7 @@ function App() {
                   </Box>
                 </AccordionSummary>
                 </Tooltip>
-                <AccordionDetails sx={{ pt: 1.5, pb: 1.5, px: 2 }}>
+                <AccordionDetails>
                   <Box sx={{ mb: 1.5, ml: 0.5 }}>
                     <Typography 
                       variant="body2" 
@@ -715,7 +738,7 @@ function App() {
                     </Typography>
                   </Box>
                   
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', gap: 1 }}>
                     <Box>
                       <Button
                         size="small"
@@ -732,7 +755,7 @@ function App() {
                           },
                         }}
                       >
-                        REPORTS
+                        DOWNLOAD REPORTS
                       </Button>
                       <Menu
                         anchorEl={menuAnchor}
@@ -770,10 +793,13 @@ function App() {
                             return (
                               <MenuItem 
                                 key={timestamp}
-                                onClick={handleLogsMenuClose}
+                                onClick={() => {
+                                  handleLogsMenuClose();
+                                  handleReportVersionSelectAndDownload(survey.name, timestamp);
+                                }}
                               >
                                 <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
-                                  Version {index + 1} - {formattedDate}
+                                Version {index + 1} - {formattedDate}
                                 </Typography>
                               </MenuItem>
                             );
@@ -789,12 +815,15 @@ function App() {
                       </Menu>
 
                     </Box>
-                    <Box>
+                    <Box sx={{ 
+                      display: 'flex', 
+                      alignItems: 'center',
+                      gap: 0.5 // Add gap between icons
+                    }}>
                       <Tooltip title="EDIT" arrow>
                         <IconButton
                           size="small"
                           onClick={() => handleLoadSurvey(survey)}
-                          title="Edit survey"
                           sx={{
                             '&:hover': {
                               color: 'info.main',
@@ -808,7 +837,6 @@ function App() {
                         <IconButton
                           size="small"
                           onClick={() => handleDuplicateSurvey(survey)}
-                          title="Duplicate survey"
                           sx={{
                             '&:hover': {
                               color: 'success.main',
@@ -822,7 +850,6 @@ function App() {
                         <IconButton
                           size="small"
                           onClick={() => handleDeleteSurvey(survey.id)}
-                          title="Delete survey"
                           sx={{
                             '&:hover': {
                               color: 'error.main',
@@ -1070,7 +1097,7 @@ function App() {
                             onClick={() => downloadFile(surveyAnalysis.analysisLink)}
                             disabled={isLoadingAnalysis} 
                             variant='outlined'
-                            endIcon={<FileDownloadIcon />}
+                            endIcon={<ManageSearchIcon />}
                           >
                             Download JSON Audit Trail
                           </Button>
