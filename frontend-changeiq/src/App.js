@@ -27,8 +27,13 @@ import {
   LinearProgress,
   Tooltip,
   DialogActions,
+  Accordion, 
+  AccordionSummary, 
+  AccordionDetails,
+  AccordionActions,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import DescriptionIcon from '@mui/icons-material/Description';
 import PrivacyTipIcon from '@mui/icons-material/PrivacyTip';
@@ -527,115 +532,185 @@ useEffect(() => {
           Start New Survey
         </Button>
       </Box>
-
-      <Divider />
-
-      <Toolbar>
-        <Typography variant="h6" noWrap component="div">
-          Your Surveys
-        </Typography>
-      </Toolbar>
-  
       <Divider />
       
+      <Typography 
+      variant="h6" 
+      sx={{ 
+        p: 2,
+        pb: 1,
+        fontWeight: 'medium',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      SURVEYS
+    </Typography>
+  
+  {/* Survey List */}
+    <Box sx={{ 
+      flex: 1,
+      display: 'flex', 
+      flexDirection: 'column',
+      overflow: 'hidden'
+    }}>
       <Box sx={{ 
+        overflowY: 'auto', 
         flex: 1,
-        display: 'flex', 
-        flexDirection: 'column',
-        overflow: 'hidden'
+        // p: 1
       }}>
-        <List sx={{ 
-          overflowY: 'auto', 
-          flex: 1
-        }}>
-          {isLoading ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-              <CircularProgress />
-            </Box>
-          ) : savedSurveys.length === 0 ? (
-            <ListItem>
-              <ListItemText primary="No saved surveys" secondary="Create your first survey to get started" />
-            </ListItem>
-          ) : (
-            savedSurveys
-              .sort((a, b) => new Date(b.dateModified) - new Date(a.dateModified))
-              .map((survey) => (
-                <ListItem 
-                  key={survey.id}
-                  sx={{ 
-                    backgroundColor: currentSurvey && currentSurvey.id === survey.id ? 
-                      'rgba(0, 0, 0, 0.08)' : 'inherit',
-                    py: 1,
+        {isLoading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+            <CircularProgress />
+          </Box>
+        ) : savedSurveys.length === 0 ? (
+          <Box sx={{ p: 2, textAlign: 'center' }}>
+            <Typography variant="body1">No saved surveys</Typography>
+            <Typography variant="body2" color="text.secondary">
+              Create your first survey to get started
+            </Typography>
+          </Box>
+        ) : (
+          savedSurveys
+            .sort((a, b) => new Date(b.dateModified) - new Date(a.dateModified))
+            .map((survey) => (
+              <Accordion
+                key={survey.id}
+                disableGutters
+                sx={{
+                  // mb: 1,
+                  // boxShadow: 'none',
+                  // '&:before': {
+                  //   display: 'none',
+                  // },
+                  // backgroundColor: currentSurvey && currentSurvey.id === survey.id ? 
+                  //   'rgba(33, 158, 188, 0.08)' : 'background.paper',
+                  // border: '1px solid',
+                  // borderColor: 'divider',
+                  // borderRadius: 1,
+                  overflow: 'hidden'
+                }}
+              >
+                <Tooltip 
+                  title={
+                    <Box>
+                      <Typography variant="subtitle2">{survey.name}</Typography>
+                      {/* <Typography variant="body2" >
+                        Modified: {new Date(survey.dateModified).toLocaleString()}
+                      </Typography> */}
+                    </Box>
+                  }
+                  arrow
+                  placement="right"
+                  enterDelay={500}
+                  slotProps={{
+                    tooltip: {
+                      sx: {
+                        backgroundColor: '#3b3b3b',
+                      },
+                    },
+                    arrow: {
+                      sx: {
+                        color: '#3b3b3b',
+                      },
+                    },
                   }}
                 >
-                  <ListItemIcon>
-                    <DescriptionIcon />
-                  </ListItemIcon>
-                  <Tooltip 
-                    title={
-                      <Box>
-                        <Typography variant="subtitle2">{survey.name}</Typography>
-                        <Typography variant="body2" >
-                          Modified: {new Date(survey.dateModified).toLocaleString()}
-                        </Typography>
-                      </Box>
-                    }
-                    arrow
-                    placement="top"
-                    enterDelay={500}
-                    slotProps={{
-                      tooltip: {
-                        sx: {
-                          backgroundColor: '#3b3b3b',
-                        },
-                      },
-                      arrow: {
-                        sx: {
-                          color: '#3b3b3b',
-                        },
-                      },
-                    }}
+
+                <AccordionSummary
+                  expandIcon={<ExpandMoreIcon />}
+                  sx={{
+                    minHeight: '48px',
+                    '& .MuiAccordionSummary-content': {
+                      margin: '8px 0',
+                    },
+                    backgroundColor: 'rgba(33, 158, 188, 0.08)'
+                  }}
                   >
-                    <ListItemText 
-                      primary={survey.name} 
-                      secondary={`Modified: ${new Date(survey.dateModified).toLocaleDateString()}`}
-                      primaryTypographyProps={{
-                        noWrap: true,
-                        style: { maxWidth: '120px' }
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <DescriptionIcon 
+                      fontSize="small" 
+                      sx={{ 
+                        mr: 1.5, 
+                        color: currentSurvey && currentSurvey.id === survey.id ? 
+                        '#219EBC' : 'text.secondary' 
                       }}
-                      secondaryTypographyProps={{
-                        noWrap: true,
-                        style: { maxWidth: '120px' }
+                      />
+                    <Typography 
+                      sx={{ 
+                        fontWeight: currentSurvey && currentSurvey.id === survey.id ? 
+                        'medium' : 'normal',
+                        color: currentSurvey && currentSurvey.id === survey.id ? 
+                        'primary.main' : 'text.primary',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        maxWidth: {
+                          xs: '150px',
+                          sm: '180px'
+                        }
                       }}
-                    />
-                  </Tooltip>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                    <IconButton 
-                      size="small" 
-                      onClick={() => handleLoadSurvey(survey)}
-                      title="Edit survey"
-                    >
-                      <EditIcon fontSize="small" />
-                    </IconButton>
-                    <IconButton 
-                      size="small" 
-                      onClick={() => handleDuplicateSurvey(survey)}
-                      title="Duplicate survey"
-                    >
-                      <ContentCopyIcon fontSize="small" />
-                    </IconButton>
-                    <IconButton 
-                      size="small" 
-                      onClick={() => handleDeleteSurvey(survey.id)}
-                      title="Delete survey"
-                    >
-                      <DeleteIcon fontSize="small" />
-                    </IconButton>
+                      >
+                      {survey.name}
+                    </Typography>
                   </Box>
-                </ListItem>
+                </AccordionSummary>
+                </Tooltip>
+                <AccordionDetails sx={{ pt: 1.5, pb: 1.5, px: 2 }}>
+                  <Box sx={{ mb: 1.5, ml: 0.5 }}>
+                    <Typography 
+                      variant="body2" 
+                      color="text.secondary"
+                      sx={{ fontSize: '0.8rem' }}
+                    >
+                      Modified: {new Date(survey.dateModified).toLocaleString()}
+                    </Typography>
+                  </Box>
+                  
+                  <Box sx={{ display: 'flex', gap: 1, justifyContent: 'right', alignContent: 'center' }}>
+                    <Box  >
+                      <Typography 
+                        variant="body2" 
+                        color="text.secondary"
+                        sx={{ fontSize: '0.8rem' }}
+                      >
+                        TEST
+                      </Typography>
+                    </Box>
+                    <Tooltip title="EDIT" arrow>
+                      <IconButton 
+                        size="small" 
+                        onClick={() => handleLoadSurvey(survey)}
+                        title="Edit survey"
+                        >
+                        <EditIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="DUPLICATE" arrow>
+                      <IconButton 
+                        size="small" 
+                        onClick={() => handleDuplicateSurvey(survey)}
+                        title="Duplicate survey"
+                        >
+                        <ContentCopyIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="DELETE" arrow>
+                      <IconButton 
+                        size="small" 
+                        onClick={() => handleDeleteSurvey(survey.id)}
+                        title="Delete survey"
+                        >
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
+                </AccordionDetails>
+              </Accordion>
             ))
-          )}
-        </List>
+        )}
+      </Box>
       </Box>
     </Box>
   );
@@ -677,6 +752,7 @@ useEffect(() => {
           component="nav"
           sx={{ width: { md: drawerWidth }, flexShrink: { md: 0 } }}
         >
+          {/* Mobile Drawer */}
           <Drawer
             variant="temporary"
             open={mobileOpen}
@@ -691,6 +767,7 @@ useEffect(() => {
           >
             {drawer}
           </Drawer>
+          {/* Desktop Drawer */}
           <Drawer
             variant="permanent"
             sx={{
