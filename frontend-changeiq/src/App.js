@@ -991,10 +991,7 @@ function App() {
                         ROI Analysis
                       </Typography>
                       <Tooltip 
-                        title={Object.keys(currentResponses).length === 0 ?
-                          "Fill in survey before creating report." : 
-                          "Save survey progress before creating report."
-                        }
+                        title={"Save non-empty survey before creating report."}
                         open={isHovered && isAnalysisDisabled}
                       >
                         <span onMouseEnter={() => setIsHovered(true)}
