@@ -966,7 +966,7 @@ function App() {
                   <CalculateIcon sx={{ mr: 1, fontSize: 40, color: '#FB8500' }} />
                   Technology Adoption ROI Calculator
                 </Typography>
-                {currentSurvey ? (
+                {currentSurvey && (
                 <Alert 
                   severity="info" 
                   icon={<EditNoteIcon />}
@@ -981,10 +981,6 @@ function App() {
                     You are currently editing survey: <strong>{currentSurvey.name}</strong>
                   </Typography>
                 </Alert>
-              ) : (
-                <Typography variant="body1" align="center" color="text.secondary" sx={{ mb: 4 }}>
-                  Complete this survey to evaluate the ROI of your technology investment.
-                </Typography>
               )}
                                 
                 {/* Analysis section for the submitted view */}
@@ -1021,7 +1017,7 @@ function App() {
                       </Tooltip>
                     </Box>
                     <Typography variant="body2" color="text.secondary">
-                      Analyze ROI, payback period, and survey insights, with a PDF report and charts.
+                      Analyze ROI, survey insights, and actionable recommendations in a PDF report with charts.
                     </Typography>
                   </Paper>
                   
