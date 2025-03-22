@@ -63,15 +63,18 @@ function SaveSurveyDialog({ open, onClose, onSave, savedSurveys, initialName = '
           title="Cannot overwrite a different existing survey."
           open={isHovered && isSaveDisabled}
         >
-          <Button 
-            variant="contained"
-            onClick={handleSave}
-            disabled={isSaveDisabled}
+          <span
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
           >
-            {isEditing ? 'Update' : 'Save'}
-          </Button>
+            <Button 
+              variant="contained"
+              onClick={handleSave}
+              disabled={isSaveDisabled}
+            >
+              {isEditing ? 'Update' : 'Save'}
+            </Button>
+          </span>
         </Tooltip>
       </DialogActions>
     </Dialog>

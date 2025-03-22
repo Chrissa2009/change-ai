@@ -92,6 +92,7 @@ function App() {
   const [selectedSurvey, setSelectedSurvey] = useState(null);
   const [versionsLoading, setVersionsLoading] = useState(false);
   const [selectedReport, setSelectedReport] = useState(null);
+  const [isHovered, setIsHovered] = useState(false);
 
 
   console.log('selectedReport:', selectedReport);
@@ -864,7 +865,8 @@ function App() {
       </Box>
     </Box>
   );
-  
+
+  const isAnalysisDisabled = hasUnsavedChanges || !currentSurvey || Object.keys(currentSurvey.responses).length === 0;
 
   return (
     <ThemeProvider theme={theme}>
@@ -986,162 +988,172 @@ function App() {
               )}
                                 
                 {/* Analysis section for the submitted view */}
-                {currentSurvey && (
-                  <Box sx={{ mt: 4, mb: 3 }}>
-                    <Paper sx={{ p: 3 }}>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                        <Typography variant="h6" color= '#023047'>
-                          ROI Analysis
-                        </Typography>
-                        <Button
-                          variant="contained"
-                          color="primary"
-                          startIcon={<QueryStatsIcon />}
-                          onClick={() => {
-                            getSurveyAnalysis(currentSurvey.name, currentResponses);
-                            setAnalysisDialogOpen(true);
-                          }}
-                          disabled={isLoadingAnalysis}
-                          sx={{ backgroundColor: "#219EBC", '&:hover': { backgroundColor: "#1A7A94" } }}
+                <Box sx={{ mt: 4, mb: 3 }}>
+                  <Paper sx={{ p: 3 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                      <Typography variant="h6" color= '#023047'>
+                        ROI Analysis
+                      </Typography>
+                      <Tooltip 
+                        title={Object.keys(currentResponses).length === 0 ?
+                          "Fill in survey before creating report." : 
+                          "Save survey progress before creating report."
+                        }
+                        open={isHovered && isAnalysisDisabled}
+                      >
+                        <span onMouseEnter={() => setIsHovered(true)}
+                              onMouseLeave={() => setIsHovered(false)}
                         >
-                          {isLoadingAnalysis ? 'Analyzing...' : 'Run Analysis'}
+                          <Button
+                            variant="contained"
+                            color="primary"
+                            startIcon={<QueryStatsIcon />}
+                            onClick={() => {
+                              getSurveyAnalysis(currentSurvey.name, currentResponses);
+                              setAnalysisDialogOpen(true);
+                            }}
+                            disabled={isLoadingAnalysis || isAnalysisDisabled}
+                            sx={{ backgroundColor: "#219EBC", '&:hover': { backgroundColor: "#1A7A94" } }}
+                          >
+                            {isLoadingAnalysis ? 'Analyzing...' : 'Create Report'}
+                          </Button>
+                        </span>
+                      </Tooltip>
+                    </Box>
+                    <Typography variant="body2" color="text.secondary">
+                      Analyze ROI, payback period, and survey insights, with a PDF report and charts.
+                    </Typography>
+                  </Paper>
+                  
+                  {/* Show the analysis results if available */}
+                  <Dialog
+                    open={analysisDialogOpen}
+                    onClose={() => setAnalysisDialogOpen(false)}
+                    fullWidth
+                    maxWidth="md"
+                    scroll="paper"
+                    aria-labelledby="analysis-dialog-title"
+                  >
+                    <DialogTitle id="analysis-dialog-title">
+                      Analysis Results
+                      <IconButton
+                        aria-label="close"
+                        onClick={() => setAnalysisDialogOpen(false)}
+                        sx={{ position: 'absolute', right: 8, top: 8 }}
+                      >
+                        <CloseIcon />
+                      </IconButton>
+                    </DialogTitle>
+                    <DialogContent dividers>
+                      {isLoadingAnalysis ? (
+                        <Box sx={{ width: '100%', mt: 2, mb: 2 }}>
+                          <LinearProgress color='success'/>
+                        </Box>
+                      ) : surveyAnalysis ? (
+                        <SurveyAnalysisResults 
+                          analysisData={surveyAnalysis}
+                          surveyData={currentResponses}             
+                          surveyName={currentSurvey.name}
+                          ref={surveyResultsRef} 
+                        />
+                      ) : (
+                        <Typography>No analysis data found.</Typography>
+                      )}
+                    </DialogContent>
+                    <DialogActions sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Tooltip 
+                        title={
+                          <Box>
+                            <Typography variant="subtitle2">The ROI insights generated by this tool are automated and may require human review for accuracy and applicability. 
+                              We recommend verifying results with a qualified expert before making any business decisions.</Typography>
+                          </Box>
+                        }
+                        arrow
+                        placement="top"
+                        slotProps={{
+                          tooltip: {
+                            sx: {
+                              backgroundColor: '#3b3b3b',
+                            },
+                          },
+                          arrow: {
+                            sx: {
+                              color: '#3b3b3b',
+                            },
+                          },
+                        }}
+                      >
+                        <Typography
+                            variant="body2"
+                            sx={{
+                              border: '1px solid',
+                              borderColor: '#f57c00',
+                              borderRadius: '4px',
+                              padding: '6px 12px',
+                              cursor: 'pointer',
+                              color: '#f57c00',
+                              gap: 1,
+                              display: 'flex',
+                              alignItems: 'center',
+                              transition: 'all 0.3s ease',
+                              '&:hover': {
+                                transform: 'translateY(-3px)',
+                                boxShadow: '0 6px 12px rgba(25, 118, 210, 0.3)',
+                              },
+                            }}
+                            >
+                            <PrivacyTipIcon fontSize="small"/>
+                            DISCLAIMER
+                        </Typography>
+                      </Tooltip>
+                      <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap',  }}>
+                        <Button
+                          onClick={() => downloadFile(surveyAnalysis.analysisLink)}
+                          disabled={isLoadingAnalysis} 
+                          variant='outlined'
+                          endIcon={<ManageSearchIcon />}
+                          sx={{
+                            transition: 'all 0.3s ease',
+                            '&:hover': {
+                              transform: 'translateY(-3px)',
+                              boxShadow: '0 6px 12px rgba(25, 118, 210, 0.3)',
+                            },
+                          }}
+                        >
+                          Download JSON Audit Trail
+                        </Button>
+                        <Button 
+                          onClick={handlePdfDownload} 
+                          disabled={!surveyAnalysis || isGeneratingPDF} 
+                          variant='outlined'
+                          color="success"
+                          sx={{
+                            color: 'success.main',
+                            borderColor: 'success.main',
+                            '&:disabled': {
+                              opacity: 0.7,
+                              borderColor: (theme) => theme.palette.mode === 'light' 
+                                ? 'rgba(0, 0, 0, 0.12)' 
+                                : 'rgba(255, 255, 255, 0.12)'
+                            },
+                            transition: 'all 0.3s ease',
+                            '&:hover': {
+                              transform: 'translateY(-3px)',
+                              boxShadow: '0 6px 12px rgba(25, 118, 210, 0.3)',
+                              borderColor: 'success.dark',
+                            },
+                          }}
+                          endIcon={isGeneratingPDF ?
+                            <CircularProgress size={20} color="success" /> : 
+                            <FileDownloadIcon color="success" />
+                          }
+                        >
+                          {isGeneratingPDF ? 'Generating PDF...' : 'Download PDF Report'}
                         </Button>
                       </Box>
-                      <Typography variant="body2" color="text.secondary">
-                        Run an analysis to calculate ROI, payback period, and get insights based on your survey responses.
-                      </Typography>
-                    </Paper>
-                    
-                    {/* Show the analysis results if available */}
-                    <Dialog
-                      open={analysisDialogOpen}
-                      onClose={() => setAnalysisDialogOpen(false)}
-                      fullWidth
-                      maxWidth="md"
-                      scroll="paper"
-                      aria-labelledby="analysis-dialog-title"
-                    >
-                      <DialogTitle id="analysis-dialog-title">
-                        Analysis Results
-                        <IconButton
-                          aria-label="close"
-                          onClick={() => setAnalysisDialogOpen(false)}
-                          sx={{ position: 'absolute', right: 8, top: 8 }}
-                        >
-                          <CloseIcon />
-                        </IconButton>
-                      </DialogTitle>
-                      <DialogContent dividers>
-                        {isLoadingAnalysis ? (
-                          <Box sx={{ width: '100%', mt: 2, mb: 2 }}>
-                            <LinearProgress color='success'/>
-                          </Box>
-                        ) : surveyAnalysis ? (
-                          <SurveyAnalysisResults 
-                            analysisData={surveyAnalysis}
-                            surveyData={currentResponses}             
-                            surveyName={currentSurvey.name}
-                            ref={surveyResultsRef} 
-                          />
-                        ) : (
-                          <Typography>No analysis data found.</Typography>
-                        )}
-                      </DialogContent>
-                      <DialogActions sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Tooltip 
-                          title={
-                            <Box>
-                              <Typography variant="subtitle2">The ROI insights generated by this tool are automated and may require human review for accuracy and applicability. 
-                                We recommend verifying results with a qualified expert before making any business decisions.</Typography>
-                            </Box>
-                          }
-                          arrow
-                          placement="top"
-                          slotProps={{
-                            tooltip: {
-                              sx: {
-                                backgroundColor: '#3b3b3b',
-                              },
-                            },
-                            arrow: {
-                              sx: {
-                                color: '#3b3b3b',
-                              },
-                            },
-                          }}
-                        >
-                          <Typography
-                              variant="body2"
-                              sx={{
-                                border: '1px solid',
-                                borderColor: '#f57c00',
-                                borderRadius: '4px',
-                                padding: '6px 12px',
-                                cursor: 'pointer',
-                                color: '#f57c00',
-                                gap: 1,
-                                display: 'flex',
-                                alignItems: 'center',
-                                transition: 'all 0.3s ease',
-                                '&:hover': {
-                                  transform: 'translateY(-3px)',
-                                  boxShadow: '0 6px 12px rgba(25, 118, 210, 0.3)',
-                                },
-                              }}
-                              >
-                              <PrivacyTipIcon fontSize="small"/>
-                              DISCLAIMER
-                          </Typography>
-                        </Tooltip>
-                        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap',  }}>
-                          <Button
-                            onClick={() => downloadFile(surveyAnalysis.analysisLink)}
-                            disabled={isLoadingAnalysis} 
-                            variant='outlined'
-                            endIcon={<ManageSearchIcon />}
-                            sx={{
-                              transition: 'all 0.3s ease',
-                              '&:hover': {
-                                transform: 'translateY(-3px)',
-                                boxShadow: '0 6px 12px rgba(25, 118, 210, 0.3)',
-                              },
-                            }}
-                          >
-                            Download JSON Audit Trail
-                          </Button>
-                          <Button 
-                            onClick={handlePdfDownload} 
-                            disabled={!surveyAnalysis || isGeneratingPDF} 
-                            variant='outlined'
-                            color="success"
-                            sx={{
-                              color: 'success.main',
-                              borderColor: 'success.main',
-                              '&:disabled': {
-                                opacity: 0.7,
-                                borderColor: (theme) => theme.palette.mode === 'light' 
-                                  ? 'rgba(0, 0, 0, 0.12)' 
-                                  : 'rgba(255, 255, 255, 0.12)'
-                              },
-                              transition: 'all 0.3s ease',
-                              '&:hover': {
-                                transform: 'translateY(-3px)',
-                                boxShadow: '0 6px 12px rgba(25, 118, 210, 0.3)',
-                                borderColor: 'success.dark',
-                              },
-                            }}
-                            endIcon={isGeneratingPDF ?
-                              <CircularProgress size={20} color="success" /> : 
-                              <FileDownloadIcon color="success" />
-                            }
-                          >
-                            {isGeneratingPDF ? 'Generating PDF...' : 'Download PDF Report'}
-                          </Button>
-                        </Box>
-                      </DialogActions>
-                    </Dialog>
-                  </Box>
-                )}
+                    </DialogActions>
+                  </Dialog>
+                </Box>
                 <Box 
                   sx={{ 
                     mt: 2,
