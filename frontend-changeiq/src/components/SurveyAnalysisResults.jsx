@@ -108,7 +108,7 @@ const SurveyAnalysisResults = forwardRef(({ analysisData, surveyData, surveyName
   const recommendations = responseData.recommendations || [];
 
   // Check if ROI is a percentage or a raw value
-  const isRoiPercentage = roiValue >= -1 && roiValue <= 1;
+//   const isRoiPercentage = roiValue >= -1 && roiValue <= 1;
   
   return (
     <Box sx={{ mt: 1 }} ref={contentRef}>
