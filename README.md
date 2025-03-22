@@ -22,62 +22,46 @@
 - **Monitoring**: Azure Application Insights
 - **AI Insights**: Azure OpenAI GPT-4o
 
-## 3. To Run Locally 🚀
+## 3. Infrastructure Setup 🚀
 ### 3.1. Prerequisites
-To run this project locally, you'll need:
+You'll need:
 - An **Azure account**
 - Azure resources set up for:
   - **Cosmos DB**
   - **Azure Blob Storage**
   - **Azure Functions**
   - **Azure OpenAI**
-  - (Optional) **Azure Key Vault** and **Application Insights**
+  - **Azure Key Vault**
+  - **Azure Managed Identity**
 
 Make sure you have **Node.js**, **Python**, and the **Azure CLI** installed.
 
-### 3.2. Environment Setup
-Add the following environment variables in a `.env` file or use Azure Key Vault:
+Create a Managed Identity for your Azure Functions App in order to associate with permission roles. For CosmosDB
+permissioning, leverage scripts/create_db_access_role since Cosmos DB storage account allowlisting is not exposed in the Azure portal.
+See this [Azure Functions integration guide with Static Web Apps](https://learn.microsoft.com/en-us/azure/static-web-apps/functions-bring-your-own).
+See [Azure Functions VSCode](https://learn.microsoft.com/en-us/azure/azure-functions/functions-develop-vs-code?tabs=node-v4%2Cpython-v2%2Cisolated-process%2Cquick-create&pivots=programming-language-csharp) for easy Azure Function bootstrapping as as well as setting up CI/CD. See [Static Web Apps Guide](https://learn.microsoft.com/en-us/azure/static-web-apps/get-started-portal?tabs=vanilla-javascript&pivots=github). Change .github/workflows yml files to reference your API tokens instead.
 
-```sh
-# Cosmos DB
-COSMOS_DB_CONNECTION_STRING="your_cosmos_db_connection_string"
+For Cosmos DB, setup database and containers defined in api/db_utils.py before running application.
 
-# Blob Storage
-AZURE_STORAGE_ACCOUNT_NAME="your_storage_account"
-AZURE_STORAGE_ACCOUNT_KEY="your_storage_key"  # If not using Managed Identity
-AZURE_STORAGE_CONTAINER_NAME="your_container_name"
-# Azure Function App
-FUNCTION_APP_URL="https://your-function-url.azurewebsites.net"
+For LLM, setup either OpenAI or Azure OpenAI. If you use OpenAI, store API key in Azure KeyVault, otherwise use role-based permissioning. Model can be changed in api/openai_utils.py.
 
-# Azure OpenAI
-AZURE_OPENAI_ENDPOINT="https://your-openai-resource.openai.azure.com/"
-AZURE_OPENAI_API_KEY="your_openai_api_key"
-AZURE_OPENAI_DEPLOYMENT_NAME="gpt-4o"
-
-# Application Insights (optional for local logging)
-APPINSIGHTS_INSTRUMENTATIONKEY="your_app_insights_key"
-
-# Key Vault (if accessed directly from code)
-KEY_VAULT_NAME="your-keyvault-name"
-```
-If you're using Azure Managed Identity, you can skip direct API keys for storage and Key Vault—but you’ll still need to configure that identity locally via Azure CLI login.
+### 3.2. Endpoint Setup
+Change all endpoints defined as constants in all the files in api folder ending in utils.py, specific to your infrastucture.
 
 ### 3.3. Run the Project
-1. Clone the project
+1. Install dependencies
    ```sh
-   git clone https://github.com/Chrissa2009/change-ai.git
-   cd change-ai
-   ```
-2. Install dependencies
-   ```sh
-   pip install -r requirements.txt
+   cd api
+   pip install -r requirements.txt\
+   cd ../frontend-changeiq
    npm install
    ```
-3. Build and run the frontend server
+2. Build and run the frontend server
    ```sh
    npm run build
    npm run start
    ```
+3. Open http://localhost:3000/ for local frontend testing.
 ## 🐛 Found a Bug?  
 
 Spotted something off? Let us know!  
