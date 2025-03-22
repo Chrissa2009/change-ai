@@ -317,7 +317,7 @@ function App() {
       setIsGeneratingPDF(true);
       
       try {
-        await generatePDFWithHtml2Pdf(surveyResultsRef);
+        await generatePDFWithHtml2Pdf(surveyResultsRef, currentSurvey.name);
         // You could show a success message here
       } catch (error) {
         console.error('Failed to generate PDF:', error);
@@ -1022,7 +1022,7 @@ function App() {
                       aria-labelledby="analysis-dialog-title"
                     >
                       <DialogTitle id="analysis-dialog-title">
-                        ANALYSIS RESULTS
+                        Analysis Results
                         <IconButton
                           aria-label="close"
                           onClick={() => setAnalysisDialogOpen(false)}
@@ -1040,6 +1040,7 @@ function App() {
                           <SurveyAnalysisResults 
                             analysisData={surveyAnalysis}
                             surveyData={currentResponses}             
+                            surveyName={currentSurvey.name}
                             ref={surveyResultsRef} 
                           />
                         ) : (
@@ -1081,6 +1082,11 @@ function App() {
                                 gap: 1,
                                 display: 'flex',
                                 alignItems: 'center',
+                                transition: 'all 0.3s ease',
+                                '&:hover': {
+                                  transform: 'translateY(-3px)',
+                                  boxShadow: '0 6px 12px rgba(25, 118, 210, 0.3)',
+                                },
                               }}
                               >
                               <PrivacyTipIcon fontSize="small"/>
@@ -1093,6 +1099,13 @@ function App() {
                             disabled={isLoadingAnalysis} 
                             variant='outlined'
                             endIcon={<ManageSearchIcon />}
+                            sx={{
+                              transition: 'all 0.3s ease',
+                              '&:hover': {
+                                transform: 'translateY(-3px)',
+                                boxShadow: '0 6px 12px rgba(25, 118, 210, 0.3)',
+                              },
+                            }}
                           >
                             Download JSON Audit Trail
                           </Button>
@@ -1100,9 +1113,26 @@ function App() {
                             onClick={handlePdfDownload} 
                             disabled={!surveyAnalysis || isGeneratingPDF} 
                             variant='outlined'
+                            color="success"
+                            sx={{
+                              color: 'success.main',
+                              borderColor: 'success.main',
+                              '&:disabled': {
+                                opacity: 0.7,
+                                borderColor: (theme) => theme.palette.mode === 'light' 
+                                  ? 'rgba(0, 0, 0, 0.12)' 
+                                  : 'rgba(255, 255, 255, 0.12)'
+                              },
+                              transition: 'all 0.3s ease',
+                              '&:hover': {
+                                transform: 'translateY(-3px)',
+                                boxShadow: '0 6px 12px rgba(25, 118, 210, 0.3)',
+                                borderColor: 'success.dark',
+                              },
+                            }}
                             endIcon={isGeneratingPDF ?
-                              <CircularProgress size={20} color="inherit" /> : 
-                              <FileDownloadIcon />
+                              <CircularProgress size={20} color="success" /> : 
+                              <FileDownloadIcon color="success" />
                             }
                           >
                             {isGeneratingPDF ? 'Generating PDF...' : 'Download PDF Report'}

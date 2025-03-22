@@ -19,10 +19,12 @@ import RecommendIcon from '@mui/icons-material/Recommend';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import EqualizerIcon from '@mui/icons-material/Equalizer';
+import InsightsIcon from '@mui/icons-material/Insights';
 import WaterfallChart from './Chart/WaterfallChart';
 
 // Convert component to use forwardRef
-const SurveyAnalysisResults = forwardRef(({ analysisData, surveyData }, ref) => {
+const SurveyAnalysisResults = forwardRef(({ analysisData, surveyData, surveyName }, ref) => {
+console.log('surveyName', surveyName);
   const [expandedState, setExpandedState] = useState({
     panel1: true, // ROI Summary
     panel2: true, // Insights
@@ -111,22 +113,81 @@ const SurveyAnalysisResults = forwardRef(({ analysisData, surveyData }, ref) => 
   
   return (
     <Box sx={{ mt: 1 }} ref={contentRef}>
-      {/* Add a title section that will only appear in the PDF */}
-      <Box 
-        id="pdf-title-section" 
+      <Box id="pdf-title-section" sx={{ 
+        // display: 'none', 
+        mb: 4,
+        backgroundColor: '#023047',
+        color: 'white',
+        p: 2,
+        borderRadius: 1,
+        '@media print': {
+        display: 'block !important',
+        padding: '20px !important',
+        marginBottom: '30px !important',
+        '& h4': {
+        fontSize: '24pt !important',
+        lineHeight: '1.2 !important'
+        },
+        '& .MuiSvgIcon-root': {
+        fontSize: '28pt !important',
+        marginRight: '8px !important'
+        }
+    }
+      }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }} className="pdf-logo-container">
+          <InsightsIcon sx={{ 
+            fontSize: 30, 
+            color: '#FFB703', 
+            mr: 1 
+          }} />
+          <Typography variant="h4" 
+          className="pdf-logo-text"
+          sx={{ 
+            fontFamily: '"Space Grotesk", sans-serif',
+            color: '#FB8500',
+            lineHeight: 1.2
+          }}>
+            change.ai
+          </Typography>
+        </Box>
+        <Typography variant="subtitle2" 
+        className="pdf-logo-subtext"
         sx={{ 
-          mb: 3, 
-          textAlign: 'center', 
-          display: 'none', // Hidden by default, will be shown for PDF
-          pt: 3, pb: 2 
-        }}
-      >
-        <Typography variant="h4">Survey Analysis Report</Typography>
-        <Typography variant="subtitle1" color="text.secondary">
-          {new Date().toLocaleDateString()}
+          color: '#8ecae6',
+          textAlign: 'center',
+          mt: 1,
+          fontSize: '0.8rem'
+        }}>
+          AI Calculations. Human Decisions.
         </Typography>
       </Box>
-      
+
+        {/* Survey Name and Date */}
+        <Box 
+            id="pdf-survey-info"
+            sx={{ 
+            // display: 'none',
+            '@media print': {
+                display: 'block !important',
+                textAlign: 'center',
+                marginBottom: '20px !important',
+                '& h3': {
+                fontSize: '20pt !important',
+                color: '#023047 !important',
+                marginBottom: '8px !important'
+                },
+                '& h5': {
+                fontSize: '14pt !important',
+                color: '#666 !important'
+                }
+            }
+            }}
+        >
+            <Typography variant="h5">
+                {surveyName}
+            </Typography>
+        </Box>
+
       {/* ROI Summary Accordion */}
       <Accordion 
         expanded={expandedState.panel1} 
