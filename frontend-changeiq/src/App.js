@@ -91,16 +91,15 @@ function App() {
   const [menuAnchor, setMenuAnchor] = useState(null);
   const [selectedSurvey, setSelectedSurvey] = useState(null);
   const [versionsLoading, setVersionsLoading] = useState(false);
-  const [selectedReport, setSelectedReport] = useState(null);
   const [isHovered, setIsHovered] = useState(false);
 
 
-  console.log('selectedReport:', selectedReport);
+  console.log('currentSurvey:', currentSurvey);
   const appTheme = useTheme();
   const isMobile = useMediaQuery(appTheme.breakpoints.down('md'));
   // Create a ref to the SurveyAnalysisResults component
   const surveyResultsRef = useRef(null);
-
+  console.log('surveyAnalysis:', surveyAnalysis);
   useEffect(() => {
     const fetchSurveys = async () => {
       setIsLoading(true);
@@ -479,7 +478,6 @@ function App() {
 
   const handleReportVersionSelectAndDownload = async (surveyName, reportVersion) => {
     try {
-      setSelectedReport(reportVersion);
       const reportData = await ApiService.getReportVersion(surveyName, reportVersion);
       
       if (reportData?.analysis) {
@@ -491,8 +489,6 @@ function App() {
         message: `Failed to download report: ${error.message}`,
         severity: 'error'
       });
-    } finally {
-      setSelectedReport(null);
     }
   };
 
@@ -532,7 +528,7 @@ function App() {
     setMenuAnchor(null);
     setSelectedSurvey(null);
   };
-
+console.log('currentResponses:', currentResponses);
   const drawer = (
     <Box sx={{ 
       width: drawerWidth, 
@@ -1049,7 +1045,7 @@ function App() {
                         <Box sx={{ width: '100%', mt: 2, mb: 2 }}>
                           <LinearProgress color='success'/>
                         </Box>
-                      ) : surveyAnalysis ? (
+                      ) : surveyAnalysis && currentSurvey ? (
                         <SurveyAnalysisResults 
                           analysisData={surveyAnalysis}
                           surveyData={currentResponses}             
