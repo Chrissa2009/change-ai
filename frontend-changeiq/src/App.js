@@ -991,7 +991,7 @@ function App() {
                             disabled={isLoadingAnalysis || isAnalysisDisabled || !currentSurvey}
                             sx={{ backgroundColor: "#219EBC", '&:hover': { backgroundColor: "#1A7A94" } }}
                           >
-                            {isLoadingAnalysis ? 'Analyzing...' : 'Create Report'}
+                            {isLoadingAnalysis ? 'Creating Report...' : 'Create Report'}
                           </Button>
                         </span>
                       </Tooltip>
