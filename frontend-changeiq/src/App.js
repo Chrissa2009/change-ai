@@ -4,10 +4,6 @@ import {
   Typography, 
   Container, 
   Drawer, 
-  List, 
-  ListItem, 
-  ListItemText, 
-  ListItemIcon, 
   Divider, 
   AppBar, 
   Toolbar, 
@@ -27,8 +23,14 @@ import {
   LinearProgress,
   Tooltip,
   DialogActions,
+  Accordion, 
+  AccordionSummary, 
+  AccordionDetails,
+  Menu,
+  MenuItem
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import DescriptionIcon from '@mui/icons-material/Description';
 import PrivacyTipIcon from '@mui/icons-material/PrivacyTip';
@@ -44,10 +46,12 @@ import InsightsIcon from '@mui/icons-material/Insights';
 import CalculateIcon from '@mui/icons-material/Calculate';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import CloseIcon from '@mui/icons-material/Close';
+import ManageSearchIcon from '@mui/icons-material/ManageSearch';
 import '@fontsource/space-grotesk';
 import ApiService from './api';
 import SurveyAnalysisResults from './components/SurveyAnalysisResults';
 import QueryStatsIcon from '@mui/icons-material/QueryStats';
+import HistoryIcon from '@mui/icons-material/History';
 import { surveyQuestions } from './components/surveyQuestions';
 import { generatePDFWithHtml2Pdf } from './components/pdfUtils';
 import { downloadFile } from './components/fileUtils';
@@ -83,7 +87,14 @@ function App() {
   const [surveyAnalysis, setSurveyAnalysis] = useState(null);
   const [analysisDialogOpen, setAnalysisDialogOpen] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const [reportVersions, setReportVersions] = useState({});
+  const [menuAnchor, setMenuAnchor] = useState(null);
+  const [selectedSurvey, setSelectedSurvey] = useState(null);
+  const [versionsLoading, setVersionsLoading] = useState(false);
+  const [selectedReport, setSelectedReport] = useState(null);
 
+
+  console.log('selectedReport:', selectedReport);
   const appTheme = useTheme();
   const isMobile = useMediaQuery(appTheme.breakpoints.down('md'));
   // Create a ref to the SurveyAnalysisResults component
@@ -401,9 +412,11 @@ function App() {
       setIsLoadingAnalysis(false);
     }
   };
-useEffect(() => {
-  console.log('islodingAnalysis:', isLoadingAnalysis);
-}, [isLoadingAnalysis]);
+  //TODO: Remove this console.log
+  useEffect(() => {
+    console.log('islodingAnalysis:', isLoadingAnalysis);
+  }, [isLoadingAnalysis]);
+
   const handleDuplicateSurvey = async (survey) => {
     setIsLoading(true);
     try {
@@ -462,7 +475,63 @@ useEffect(() => {
   const handleCloseSnackbar = () => {
     setSnackbar({ ...snackbar, open: false });
   };
-  
+
+  const handleReportVersionSelectAndDownload = async (surveyName, reportVersion) => {
+    try {
+      setSelectedReport(reportVersion);
+      const reportData = await ApiService.getReportVersion(surveyName, reportVersion);
+      
+      if (reportData?.analysis) {
+        downloadFile(reportData.analysis); // Direct download
+      }
+    } catch (error) {
+      setSnackbar({
+        open: true,
+        message: `Failed to download report: ${error.message}`,
+        severity: 'error'
+      });
+    } finally {
+      setSelectedReport(null);
+    }
+  };
+
+  const fetchReportVersions = async (surveyName) => {
+    try {
+      setVersionsLoading(true);
+      const response = await ApiService.listReportVersions(surveyName);
+      
+      // Extract reportVersions array from the response
+      setReportVersions(prev => ({
+        ...prev,
+        [surveyName]: response.reportVersions || []
+      }));
+    } catch (error) {
+      console.error('Error fetching report versions:', error);
+      setSnackbar({
+        open: true,
+        message: `Failed to load report versions: ${error.message}`,
+        severity: 'error'
+      });
+    } finally {
+      setVersionsLoading(false);
+    }
+  };
+
+  // Open LOGS menu
+  const handleLogsMenuOpen = (event, surveyName) => {
+    setMenuAnchor(event.currentTarget);
+    setSelectedSurvey(surveyName);
+    if (!reportVersions[surveyName]) {
+      fetchReportVersions(surveyName);
+    }
+  };
+
+  // Close LOGS menu
+  const handleLogsMenuClose = () => {
+    setMenuAnchor(null);
+    setSelectedSurvey(null);
+  };
+
   const drawer = (
     <Box sx={{ 
       width: drawerWidth, 
@@ -527,115 +596,271 @@ useEffect(() => {
           Start New Survey
         </Button>
       </Box>
-
-      <Divider />
-
-      <Toolbar>
-        <Typography variant="h6" noWrap component="div">
-          Your Surveys
-        </Typography>
-      </Toolbar>
-  
       <Divider />
       
+      <Typography 
+      variant="h6" 
+      sx={{ 
+        p: 2,
+        pb: 1,
+        fontWeight: 'medium',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      SURVEYS
+    </Typography>
+  
+  {/* Survey List */}
+    <Box sx={{ 
+      flex: 1,
+      display: 'flex', 
+      flexDirection: 'column',
+      overflow: 'hidden'
+    }}>
       <Box sx={{ 
+        overflowY: 'auto', 
         flex: 1,
-        display: 'flex', 
-        flexDirection: 'column',
-        overflow: 'hidden'
+        // p: 1
       }}>
-        <List sx={{ 
-          overflowY: 'auto', 
-          flex: 1
-        }}>
-          {isLoading ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-              <CircularProgress />
-            </Box>
-          ) : savedSurveys.length === 0 ? (
-            <ListItem>
-              <ListItemText primary="No saved surveys" secondary="Create your first survey to get started" />
-            </ListItem>
-          ) : (
-            savedSurveys
-              .sort((a, b) => new Date(b.dateModified) - new Date(a.dateModified))
-              .map((survey) => (
-                <ListItem 
-                  key={survey.id}
-                  sx={{ 
-                    backgroundColor: currentSurvey && currentSurvey.id === survey.id ? 
-                      'rgba(0, 0, 0, 0.08)' : 'inherit',
-                    py: 1,
+        {isLoading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+            <CircularProgress />
+          </Box>
+        ) : savedSurveys.length === 0 ? (
+          <Box sx={{ p: 2, textAlign: 'center' }}>
+            <Typography variant="body1">No saved surveys</Typography>
+            <Typography variant="body2" color="text.secondary">
+              Create your first survey to get started
+            </Typography>
+          </Box>
+        ) : (
+          savedSurveys
+            .sort((a, b) => new Date(b.dateModified) - new Date(a.dateModified))
+            .map((survey) => (
+              <Accordion
+                defaultExpanded
+                key={survey.id}
+                disableGutters
+                sx={{
+                  // mb: 1,
+                  // boxShadow: 'none',
+                  // '&:before': {
+                  //   display: 'none',
+                  // },
+                  // backgroundColor: currentSurvey && currentSurvey.id === survey.id ? 
+                  //   'rgba(33, 158, 188, 0.08)' : 'background.paper',
+                  // border: '1px solid',
+                  // borderColor: 'divider',
+                  // borderRadius: 1,
+                  overflow: 'hidden',
+                }}
+              >
+                <Tooltip 
+                  title={
+                    <Box>
+                      <Typography variant="subtitle2">{survey.name}</Typography>
+                      {/* <Typography variant="body2" >
+                        Modified: {new Date(survey.dateModified).toLocaleString()}
+                      </Typography> */}
+                    </Box>
+                  }
+                  arrow
+                  placement="right"
+                  enterDelay={500}
+                  slotProps={{
+                    tooltip: {
+                      sx: {
+                        backgroundColor: '#3b3b3b',
+                      },
+                    },
+                    arrow: {
+                      sx: {
+                        color: '#3b3b3b',
+                      },
+                    },
                   }}
                 >
-                  <ListItemIcon>
-                    <DescriptionIcon />
-                  </ListItemIcon>
-                  <Tooltip 
-                    title={
-                      <Box>
-                        <Typography variant="subtitle2">{survey.name}</Typography>
-                        <Typography variant="body2" >
-                          Modified: {new Date(survey.dateModified).toLocaleString()}
-                        </Typography>
-                      </Box>
-                    }
-                    arrow
-                    placement="top"
-                    enterDelay={500}
-                    slotProps={{
-                      tooltip: {
-                        sx: {
-                          backgroundColor: '#3b3b3b',
-                        },
-                      },
-                      arrow: {
-                        sx: {
-                          color: '#3b3b3b',
-                        },
-                      },
-                    }}
+
+                <AccordionSummary
+                  expandIcon={<ExpandMoreIcon />}
+                  sx={{
+                    minHeight: '48px',
+                    '& .MuiAccordionSummary-content': {
+                      margin: '8px 0',
+                    },
+                    backgroundColor: 'rgba(33, 158, 188, 0.08)'
+                  }}
                   >
-                    <ListItemText 
-                      primary={survey.name} 
-                      secondary={`Modified: ${new Date(survey.dateModified).toLocaleDateString()}`}
-                      primaryTypographyProps={{
-                        noWrap: true,
-                        style: { maxWidth: '120px' }
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <DescriptionIcon 
+                      fontSize="small" 
+                      sx={{ 
+                        mr: 1.5, 
+                        color: currentSurvey && currentSurvey.id === survey.id ? 
+                        '#219EBC' : 'text.secondary' 
                       }}
-                      secondaryTypographyProps={{
-                        noWrap: true,
-                        style: { maxWidth: '120px' }
+                      />
+                    <Typography 
+                      sx={{ 
+                        fontWeight: currentSurvey && currentSurvey.id === survey.id ? 
+                        'medium' : 'normal',
+                        color: currentSurvey && currentSurvey.id === survey.id ? 
+                        'primary.main' : 'text.primary',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        maxWidth: {
+                          xs: '150px',
+                          sm: '180px'
+                        }
                       }}
-                    />
-                  </Tooltip>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                    <IconButton 
-                      size="small" 
-                      onClick={() => handleLoadSurvey(survey)}
-                      title="Edit survey"
-                    >
-                      <EditIcon fontSize="small" />
-                    </IconButton>
-                    <IconButton 
-                      size="small" 
-                      onClick={() => handleDuplicateSurvey(survey)}
-                      title="Duplicate survey"
-                    >
-                      <ContentCopyIcon fontSize="small" />
-                    </IconButton>
-                    <IconButton 
-                      size="small" 
-                      onClick={() => handleDeleteSurvey(survey.id)}
-                      title="Delete survey"
-                    >
-                      <DeleteIcon fontSize="small" />
-                    </IconButton>
+                      >
+                      {survey.name}
+                    </Typography>
                   </Box>
-                </ListItem>
+                </AccordionSummary>
+                </Tooltip>
+                <AccordionDetails>
+                  <Box sx={{ mb: 1.5, ml: 0.5 }}>
+                    <Typography 
+                      variant="body2" 
+                      color="text.secondary"
+                      sx={{ fontSize: '0.8rem' }}
+                    >
+                      Modified: {new Date(survey.dateModified).toLocaleString()}
+                    </Typography>
+                  </Box>
+                  
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', gap: 1 }}>
+                    <Box>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        onClick={(e) => handleLogsMenuOpen(e, survey.name)}
+                        startIcon={<HistoryIcon fontSize="small" />} // History icon
+                        sx={{
+                          textTransform: 'none', // Prevent uppercase transformation
+                          color: 'text.secondary', // Default text color
+                          '&:hover': {
+                            color: 'primary.main', // Change text and icon color on hover
+                            backgroundColor: 'action.hover', // Optional: Add background color on hover
+                            borderColor: 'primary.main'
+                          },
+                        }}
+                      >
+                        DOWNLOAD REPORTS
+                      </Button>
+                      <Menu
+                        anchorEl={menuAnchor}
+                        open={Boolean(menuAnchor && selectedSurvey === survey.name)}
+                        onClose={handleLogsMenuClose}
+                        anchorOrigin={{
+                          vertical: 'bottom',
+                          horizontal: 'right',
+                        }}
+                        transformOrigin={{
+                          vertical: 'top',
+                          horizontal: 'right',
+                        }}
+                      >
+                        {versionsLoading ? (
+                          <MenuItem disabled>
+                            <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+                              <CircularProgress size={20} />
+                            </Box>
+                          </MenuItem>
+                        ) : (
+                          (reportVersions[survey.name] || []).map((timestamp, index) => {
+                            // Parse the timestamp
+                            const date = new Date(timestamp);
+                            // Format the date
+                            const formattedDate = date.toLocaleString('en-US', {
+                              year: 'numeric',
+                              month: 'numeric',
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                              second: '2-digit'
+                            });
+                      
+                            return (
+                              <MenuItem 
+                                key={timestamp}
+                                onClick={() => {
+                                  handleLogsMenuClose();
+                                  handleReportVersionSelectAndDownload(survey.name, timestamp);
+                                }}
+                              >
+                                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
+                                Version {index + 1} - {formattedDate}
+                                </Typography>
+                              </MenuItem>
+                            );
+                          })
+                        )}
+                        {(reportVersions[survey.name] || []).length === 0 && !versionsLoading && (
+                          <MenuItem disabled>
+                            <Typography variant="body2" color="text.secondary">
+                              No report versions available
+                            </Typography>
+                          </MenuItem>
+                        )}
+                      </Menu>
+
+                    </Box>
+                    <Box sx={{ 
+                      display: 'flex', 
+                      alignItems: 'center',
+                      gap: 0.5 // Add gap between icons
+                    }}>
+                      <Tooltip title="EDIT" arrow>
+                        <IconButton
+                          size="small"
+                          onClick={() => handleLoadSurvey(survey)}
+                          sx={{
+                            '&:hover': {
+                              color: 'info.main',
+                            },
+                          }}
+                        >
+                          <EditIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="DUPLICATE" arrow>
+                        <IconButton
+                          size="small"
+                          onClick={() => handleDuplicateSurvey(survey)}
+                          sx={{
+                            '&:hover': {
+                              color: 'success.main',
+                            },
+                          }}
+                        >
+                          <ContentCopyIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="DELETE" arrow>
+                        <IconButton
+                          size="small"
+                          onClick={() => handleDeleteSurvey(survey.id)}
+                          sx={{
+                            '&:hover': {
+                              color: 'error.main',
+                            },
+                          }}
+                        >
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
+                  </Box>
+                </AccordionDetails>
+              </Accordion>
             ))
-          )}
-        </List>
+        )}
+      </Box>
       </Box>
     </Box>
   );
@@ -677,6 +902,7 @@ useEffect(() => {
           component="nav"
           sx={{ width: { md: drawerWidth }, flexShrink: { md: 0 } }}
         >
+          {/* Mobile Drawer */}
           <Drawer
             variant="temporary"
             open={mobileOpen}
@@ -691,6 +917,7 @@ useEffect(() => {
           >
             {drawer}
           </Drawer>
+          {/* Desktop Drawer */}
           <Drawer
             variant="permanent"
             sx={{
@@ -865,7 +1092,7 @@ useEffect(() => {
                             onClick={() => downloadFile(surveyAnalysis.analysisLink)}
                             disabled={isLoadingAnalysis} 
                             variant='outlined'
-                            endIcon={<FileDownloadIcon />}
+                            endIcon={<ManageSearchIcon />}
                           >
                             Download JSON Audit Trail
                           </Button>
