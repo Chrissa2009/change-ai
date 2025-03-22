@@ -94,12 +94,10 @@ function App() {
   const [isHovered, setIsHovered] = useState(false);
 
 
-  console.log('currentSurvey:', currentSurvey);
   const appTheme = useTheme();
   const isMobile = useMediaQuery(appTheme.breakpoints.down('md'));
   // Create a ref to the SurveyAnalysisResults component
   const surveyResultsRef = useRef(null);
-  console.log('surveyAnalysis:', surveyAnalysis);
   useEffect(() => {
     const fetchSurveys = async () => {
       setIsLoading(true);
@@ -127,7 +125,6 @@ function App() {
             };
           });
           
-          console.log('formattedSurveys:', formattedSurveys)
           setSavedSurveys(formattedSurveys);
         }
       } catch (error) {
@@ -228,7 +225,6 @@ function App() {
     setIsLoading(true);
     try {
       const fetchedSurvey = await ApiService.getSurveyByName(survey.name);
-      console.log('fetchedSurvey:', fetchedSurvey);
       
       if (!fetchedSurvey) {
         throw new Error('Survey could not be loaded from the API');
@@ -243,7 +239,6 @@ function App() {
         dateModified: fetchedSurvey.dateModified || new Date().toISOString()
       };
       
-      console.log('Setting current survey with responses:', formattedSurvey.responses);
       setCurrentSurvey(formattedSurvey);
       setCurrentResponses(formattedSurvey.responses);
       
@@ -383,10 +378,7 @@ function App() {
     
     try {
       const transformedData = transformResponsesToApiFormat(responses);
-      // console.log('Analysis response sent:', transformedData);
       const analysisData = await ApiService.fetchSurveyAnalysis(surveyName, transformedData);
-      
-      // console.log('Analysis data received:', analysisData);
       
       if (!analysisData || Object.keys(analysisData).length === 0) {
         throw new Error('Analysis returned empty results');
@@ -399,7 +391,6 @@ function App() {
       });
       
       setSurveyAnalysis(analysisData);
-      // console.log('setSurveyAnalysis(analysisData):', surveyAnalysis);
   
     } catch (error) {
       console.error('Error getting survey analysis:', error);
@@ -412,10 +403,6 @@ function App() {
       setIsLoadingAnalysis(false);
     }
   };
-  //TODO: Remove this console.log
-  useEffect(() => {
-    console.log('islodingAnalysis:', isLoadingAnalysis);
-  }, [isLoadingAnalysis]);
 
   const handleDuplicateSurvey = async (survey) => {
     setIsLoading(true);
@@ -528,7 +515,7 @@ function App() {
     setMenuAnchor(null);
     setSelectedSurvey(null);
   };
-console.log('currentResponses:', currentResponses);
+
   const drawer = (
     <Box sx={{ 
       width: drawerWidth, 
@@ -1008,7 +995,7 @@ console.log('currentResponses:', currentResponses);
                               getSurveyAnalysis(currentSurvey.name, currentResponses);
                               setAnalysisDialogOpen(true);
                             }}
-                            disabled={isLoadingAnalysis || isAnalysisDisabled}
+                            disabled={isLoadingAnalysis || isAnalysisDisabled || !currentSurvey}
                             sx={{ backgroundColor: "#219EBC", '&:hover': { backgroundColor: "#1A7A94" } }}
                           >
                             {isLoadingAnalysis ? 'Analyzing...' : 'Create Report'}

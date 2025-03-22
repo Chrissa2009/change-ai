@@ -24,7 +24,6 @@ import WaterfallChart from './Chart/WaterfallChart';
 
 // Convert component to use forwardRef
 const SurveyAnalysisResults = forwardRef(({ analysisData, surveyData, surveyName }, ref) => {
-console.log('surveyName', surveyName);
   const [expandedState, setExpandedState] = useState({
     panel1: true, // ROI Summary
     panel2: true, // Insights

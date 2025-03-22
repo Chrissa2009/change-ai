@@ -29,9 +29,8 @@ import { surveyQuestions } from '../surveyQuestions';
 
 const WaterfallChart = ({ financialData, title = "Cost-Benefit Analysis" }) => {
   const theme = useTheme();
-
   // Process the data for the waterfall chart using the utility functions
-  const { chartData, roiPercentage } = useMemo(() => {
+  const { chartData } = useMemo(() => {
     if (!financialData || !surveyQuestions) {
       return { chartData: [], roiPercentage: 0 };
     }
@@ -179,7 +178,7 @@ const WaterfallChart = ({ financialData, title = "Cost-Benefit Analysis" }) => {
   // Final impact and ROI 
   const finalImpact = chartData.length > 0 ? 
     chartData[chartData.length - 1].total : 0;
-  const isPositiveROI = finalImpact > 0;
+  // const isPositiveROI = finalImpact > 0;
 
   if (!financialData || !surveyQuestions || chartData.length === 0) {
     return (
@@ -193,7 +192,7 @@ const WaterfallChart = ({ financialData, title = "Cost-Benefit Analysis" }) => {
   // Debug logging
   // console.log('Chart Data for table:', chartData.map(item => ({
   //   name: item.name,
-  //   value: item.value,
+  //   value: item.value, 
   //   total: item.total,
   //   runningTotal: item.runningTotal, 
   //   // Log all potential properties
@@ -205,7 +204,7 @@ const WaterfallChart = ({ financialData, title = "Cost-Benefit Analysis" }) => {
       <Typography variant="h6" align="center" gutterBottom>
         {title}
       </Typography>
-      <Typography 
+      {/* <Typography 
         variant="subtitle1" 
         align="center" 
         color={isPositiveROI ? 'success.main' : 'error.main'}
@@ -213,7 +212,7 @@ const WaterfallChart = ({ financialData, title = "Cost-Benefit Analysis" }) => {
         fontWeight="bold"
       >
         ROI: {roiPercentage.toFixed(1)}% ({isPositiveROI ? 'Positive' : 'Negative'} Return)
-      </Typography>
+      </Typography> */}
       <Typography 
         variant="subtitle2" 
         align="center" 
