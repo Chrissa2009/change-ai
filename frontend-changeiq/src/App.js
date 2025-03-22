@@ -964,7 +964,7 @@ function App() {
                   }}
                 >
                   <CalculateIcon sx={{ mr: 1, fontSize: 40, color: '#FB8500' }} />
-                  Technology Adoption ROI Calculator
+                  Technology Adoption Change Management ROI Calculator
                 </Typography>
                 {currentSurvey && (
                 <Alert 
