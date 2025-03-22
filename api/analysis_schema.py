@@ -14,7 +14,17 @@ class Recommendation(BaseModel):
     description: str
     contents: str
 
+class TotalCosts(BaseModel):
+    value: float
+    explanation: str
+
+class TotalBenefits(BaseModel):
+    value: float
+    explanation: str
+
 class Analysis(BaseModel):
+    total_costs: TotalCosts
+    total_benefits: TotalBenefits
     roi: Roi
     insights: list[Insight]
     recommendations: list[Recommendation]

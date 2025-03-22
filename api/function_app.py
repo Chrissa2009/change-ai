@@ -199,15 +199,33 @@ def post_survey_analysis(req: func.HttpRequest) -> func.HttpResponse:
         )
     try:
         api_key = keyvault_utils.get_secret(keyvault_utils.get_client(), "OpenAI")
-        openai_response = json.loads(
-                openai_utils.get_json_response(
-                client=openai_utils.get_client(api_key=api_key),
-                system_message=system_prompt,
-                user_message=request_json,
-                response_class=analysis_schema.Response
+        analysis = None
+        retry = 0
+        bad_quality_answer = True
+        openai_response = None
+        while retry < 3 and bad_quality_answer:
+            openai_response = json.loads(
+                    openai_utils.get_json_response(
+                    client=openai_utils.get_client(api_key=api_key),
+                    system_message=system_prompt,
+                    user_message=request_json,
+                    response_class=analysis_schema.Response
+                )
             )
-        )
-        logging.info(f"POST survey analysis OpenAI response: {openai_response}")
+            logging.info(f"[RETRY {str(retry)}] POST survey analysis OpenAI response: {openai_response}")
+            analysis = openai_response["analysis"]
+            reported_roi = analysis["roi"]["value"]
+            reported_total_costs = analysis["total_costs"]["value"]
+            reported_total_benefits = analysis["total_benefits"]["value"]
+            computed_roi = (reported_total_benefits - reported_total_costs) / reported_total_costs
+            delta = abs(computed_roi - reported_roi)
+            if abs(computed_roi - reported_roi) < 0.01:
+                logging.info(f"[SUCCESS OPENAI RETRIES = {str(retry)}], delta = {delta}, reported_roi={reported_roi}, computed_roi={computed_roi}, reported_total_costs={reported_total_costs}, reported_total_benefits={reported_total_benefits} POST survey analysis response: {openai_response}")
+                bad_quality_answer = False
+            retry += 1
+            if retry == 3 and bad_quality_answer:
+                logging.error(f"[ERROR OPENAI RETRIES = {str(retry)}], delta = {delta}, reported_roi={reported_roi}, computed_roi={computed_roi}, reported_total_costs={reported_total_costs}, reported_total_benefits={reported_total_benefits} POST survey analysis response: {openai_response}")
+        logging.info(f"[TOTAL OPENAI RETRIES = {str(retry)}] POST survey analysis response: {openai_response}")
         summary = openai_response["summary"]
         analysis = {
             "response": openai_response["analysis"],
