@@ -317,7 +317,7 @@ function App() {
       setIsGeneratingPDF(true);
       
       try {
-        await generatePDFWithHtml2Pdf(surveyResultsRef);
+        await generatePDFWithHtml2Pdf(surveyResultsRef, currentSurvey.name);
         // You could show a success message here
       } catch (error) {
         console.error('Failed to generate PDF:', error);
@@ -1040,6 +1040,7 @@ function App() {
                           <SurveyAnalysisResults 
                             analysisData={surveyAnalysis}
                             surveyData={currentResponses}             
+                            surveyName={currentSurvey.name}
                             ref={surveyResultsRef} 
                           />
                         ) : (
