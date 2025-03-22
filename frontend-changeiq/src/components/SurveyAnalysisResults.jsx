@@ -166,7 +166,7 @@ console.log('surveyName', surveyName);
         <Box 
             id="pdf-survey-info"
             sx={{ 
-            display: 'none',
+            // display: 'none',
             '@media print': {
                 display: 'block !important',
                 textAlign: 'center',
@@ -183,12 +183,9 @@ console.log('surveyName', surveyName);
             }
             }}
         >
-        <Typography variant="h5" sx={{ color: 'white' }}>
-            {surveyName}
-        </Typography>
-        <Typography variant="subtitle1" sx={{ color: '#8ecae6' }}>
-            {new Date().toLocaleDateString()}
-        </Typography>
+            <Typography variant="h5">
+                {surveyName}
+            </Typography>
         </Box>
 
       {/* ROI Summary Accordion */}

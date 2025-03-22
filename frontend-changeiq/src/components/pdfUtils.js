@@ -18,6 +18,13 @@ export const injectPDFPageStyles = () => {
         page-break-after: avoid !important;
         margin-bottom: 20px !important;
       }
+        
+      #pdf-survey-info .MuiTypography-h5 {
+        color: #023047 !important;
+        font-size: 20pt !important;
+        font-weight: bold !important;
+      }
+
       /* Logo and header styling */
       #pdf-title-section {
         background-color: #023047 !important;

@@ -1022,7 +1022,7 @@ function App() {
                       aria-labelledby="analysis-dialog-title"
                     >
                       <DialogTitle id="analysis-dialog-title">
-                        Analysis Results - {`${currentSurvey.name}`}
+                        Analysis Results
                         <IconButton
                           aria-label="close"
                           onClick={() => setAnalysisDialogOpen(false)}
