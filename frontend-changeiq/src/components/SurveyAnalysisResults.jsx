@@ -229,7 +229,7 @@ console.log('surveyName', surveyName);
                   {roiValue > 0 
                     ? <TrendingUpIcon sx={{ mr: 1 }} /> 
                     : <TrendingDownIcon sx={{ mr: 1 }} />}
-                  {isRoiPercentage ? formatPercentage(roiValue) : formatCurrency(roiValue)}
+                  {formatPercentage(roiValue)}
                 </Typography>
               </Box>
               
