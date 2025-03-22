@@ -1117,9 +1117,6 @@ function App() {
                             sx={{
                               color: 'success.main',
                               borderColor: 'success.main',
-                              '&:hover': {
-                                borderColor: 'success.dark',
-                              },
                               '&:disabled': {
                                 opacity: 0.7,
                                 borderColor: (theme) => theme.palette.mode === 'light' 
@@ -1130,6 +1127,7 @@ function App() {
                               '&:hover': {
                                 transform: 'translateY(-3px)',
                                 boxShadow: '0 6px 12px rgba(25, 118, 210, 0.3)',
+                                borderColor: 'success.dark',
                               },
                             }}
                             endIcon={isGeneratingPDF ?
