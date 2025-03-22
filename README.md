@@ -5,12 +5,14 @@
 [https://happy-sky-0d83f1a10.6.azurestaticapps.net/](https://happy-sky-0d83f1a10.6.azurestaticapps.net/)
 
 ## 1. Core Functionalities ⚙️
-- **AI-Powered Predictive ROI Insights** with side-by-side change initiative comparison
-- **ROI Dashboard and Reporting** to help stakeholders make data-backed decisions
-- **Decision Log** tracks decisions changes, ensuring accountability and transparency
-- **Prompt Engineering and Structured Output** ensured stable API consumption and tailored recommendations
-- **Customization and Integration** allows users to customize parameters based on project context, essy integration within Azure ecosystem
-- **Accessibility & Inclusion** uses clear, jargon-free language to make insights understandable to all stakeholders, from executives to non-technical users
+- **AI-Powered Predictive ROI Insights** quantifies cost and benefits, calculates predictive ROI values
+- **ROI Dashboard** with insights on key drivers of ROI and recommendations to implement change initiative
+- **ROI Report Downloads** ability to download PDF reports with ROI summary, key insights, implementation steps, and a waterfall chart
+- **Decision Log** tracks decisions changes available for download in JSON format, ensuring accountability and transparency
+- **Structured Output** ensured stable API consumption and tailored recommendations
+- **Prompt Engineering and Customization** allows users to get customized insights and recommendations based on project context
+- **Integration** easy integration within the Azure ecosystem
+- **Accessibility & Inclusion** uses clear, jargon-free language accessible to all stakeholders, regardless of technical background.
 
 ## 2. Tech Stack 🥪
 - **Frontend**: Azure Static Web App
