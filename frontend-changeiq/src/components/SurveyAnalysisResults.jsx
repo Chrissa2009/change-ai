@@ -24,7 +24,6 @@ import WaterfallChart from './Chart/WaterfallChart';
 
 // Convert component to use forwardRef
 const SurveyAnalysisResults = forwardRef(({ analysisData, surveyData, surveyName }, ref) => {
-console.log('surveyName', surveyName);
   const [expandedState, setExpandedState] = useState({
     panel1: true, // ROI Summary
     panel2: true, // Insights
@@ -83,19 +82,19 @@ console.log('surveyName', surveyName);
   };
 
   // Format currency for ROI value if it's a large number
-  const formatCurrency = (value) => {
-    if (value === undefined || value === null) return 'N/A';
-    // If value is very large, format as currency with appropriate abbreviation
-    if (Math.abs(value) >= 1e9) {
-      return `$${(value / 1e9).toFixed(1)}B`;
-    } else if (Math.abs(value) >= 1e6) {
-      return `$${(value / 1e6).toFixed(1)}M`;
-    } else if (Math.abs(value) >= 1e3) {
-      return `$${(value / 1e3).toFixed(1)}K`;
-    } else {
-      return `$${value.toFixed(2)}`;
-    }
-  };
+//   const formatCurrency = (value) => {
+//     if (value === undefined || value === null) return 'N/A';
+//     // If value is very large, format as currency with appropriate abbreviation
+//     if (Math.abs(value) >= 1e9) {
+//       return `$${(value / 1e9).toFixed(1)}B`;
+//     } else if (Math.abs(value) >= 1e6) {
+//       return `$${(value / 1e6).toFixed(1)}M`;
+//     } else if (Math.abs(value) >= 1e3) {
+//       return `$${(value / 1e3).toFixed(1)}K`;
+//     } else {
+//       return `$${value.toFixed(2)}`;
+//     }
+//   };
 
   // Extract data from the new nested structure
   const responseData = analysisData?.analysisData?.response || {};
@@ -109,7 +108,7 @@ console.log('surveyName', surveyName);
   const recommendations = responseData.recommendations || [];
 
   // Check if ROI is a percentage or a raw value
-  const isRoiPercentage = roiValue >= -1 && roiValue <= 1;
+//   const isRoiPercentage = roiValue >= -1 && roiValue <= 1;
   
   return (
     <Box sx={{ mt: 1 }} ref={contentRef}>
@@ -229,7 +228,7 @@ console.log('surveyName', surveyName);
                   {roiValue > 0 
                     ? <TrendingUpIcon sx={{ mr: 1 }} /> 
                     : <TrendingDownIcon sx={{ mr: 1 }} />}
-                  {isRoiPercentage ? formatPercentage(roiValue) : formatCurrency(roiValue)}
+                  {formatPercentage(roiValue)}
                 </Typography>
               </Box>
               

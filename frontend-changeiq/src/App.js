@@ -91,16 +91,13 @@ function App() {
   const [menuAnchor, setMenuAnchor] = useState(null);
   const [selectedSurvey, setSelectedSurvey] = useState(null);
   const [versionsLoading, setVersionsLoading] = useState(false);
-  const [selectedReport, setSelectedReport] = useState(null);
   const [isHovered, setIsHovered] = useState(false);
 
 
-  console.log('selectedReport:', selectedReport);
   const appTheme = useTheme();
   const isMobile = useMediaQuery(appTheme.breakpoints.down('md'));
   // Create a ref to the SurveyAnalysisResults component
   const surveyResultsRef = useRef(null);
-
   useEffect(() => {
     const fetchSurveys = async () => {
       setIsLoading(true);
@@ -128,7 +125,6 @@ function App() {
             };
           });
           
-          console.log('formattedSurveys:', formattedSurveys)
           setSavedSurveys(formattedSurveys);
         }
       } catch (error) {
@@ -229,7 +225,6 @@ function App() {
     setIsLoading(true);
     try {
       const fetchedSurvey = await ApiService.getSurveyByName(survey.name);
-      console.log('fetchedSurvey:', fetchedSurvey);
       
       if (!fetchedSurvey) {
         throw new Error('Survey could not be loaded from the API');
@@ -244,7 +239,6 @@ function App() {
         dateModified: fetchedSurvey.dateModified || new Date().toISOString()
       };
       
-      console.log('Setting current survey with responses:', formattedSurvey.responses);
       setCurrentSurvey(formattedSurvey);
       setCurrentResponses(formattedSurvey.responses);
       
@@ -384,10 +378,7 @@ function App() {
     
     try {
       const transformedData = transformResponsesToApiFormat(responses);
-      // console.log('Analysis response sent:', transformedData);
       const analysisData = await ApiService.fetchSurveyAnalysis(surveyName, transformedData);
-      
-      // console.log('Analysis data received:', analysisData);
       
       if (!analysisData || Object.keys(analysisData).length === 0) {
         throw new Error('Analysis returned empty results');
@@ -400,7 +391,6 @@ function App() {
       });
       
       setSurveyAnalysis(analysisData);
-      // console.log('setSurveyAnalysis(analysisData):', surveyAnalysis);
   
     } catch (error) {
       console.error('Error getting survey analysis:', error);
@@ -413,10 +403,6 @@ function App() {
       setIsLoadingAnalysis(false);
     }
   };
-  //TODO: Remove this console.log
-  useEffect(() => {
-    console.log('islodingAnalysis:', isLoadingAnalysis);
-  }, [isLoadingAnalysis]);
 
   const handleDuplicateSurvey = async (survey) => {
     setIsLoading(true);
@@ -479,7 +465,6 @@ function App() {
 
   const handleReportVersionSelectAndDownload = async (surveyName, reportVersion) => {
     try {
-      setSelectedReport(reportVersion);
       const reportData = await ApiService.getReportVersion(surveyName, reportVersion);
       
       if (reportData?.analysis) {
@@ -491,8 +476,6 @@ function App() {
         message: `Failed to download report: ${error.message}`,
         severity: 'error'
       });
-    } finally {
-      setSelectedReport(null);
     }
   };
 
@@ -1005,7 +988,7 @@ function App() {
                               getSurveyAnalysis(currentSurvey.name, currentResponses);
                               setAnalysisDialogOpen(true);
                             }}
-                            disabled={isLoadingAnalysis || isAnalysisDisabled}
+                            disabled={isLoadingAnalysis || isAnalysisDisabled || !currentSurvey}
                             sx={{ backgroundColor: "#219EBC", '&:hover': { backgroundColor: "#1A7A94" } }}
                           >
                             {isLoadingAnalysis ? 'Analyzing...' : 'Create Report'}
@@ -1042,7 +1025,7 @@ function App() {
                         <Box sx={{ width: '100%', mt: 2, mb: 2 }}>
                           <LinearProgress color='success'/>
                         </Box>
-                      ) : surveyAnalysis ? (
+                      ) : surveyAnalysis && currentSurvey ? (
                         <SurveyAnalysisResults 
                           analysisData={surveyAnalysis}
                           surveyData={currentResponses}             
